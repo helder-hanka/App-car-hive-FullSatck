@@ -1,0 +1,94 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: carhive-db
+    restart: always
+    environment:
+      POSTGRES_USER: carhive
+      POSTGRES_PASSWORD: carhive123
+      POSTGRES_DB: carhivedb
+    volumes:
+      - carhive-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: carhive-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "8081:80"
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend/Projet_Spring_Boot-CarHive
+      dockerfile: Dockerfile
+    container_name: carhive-backend
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/carhivedb
+      SPRING_DATASOURCE_USERNAME: carhive
+      SPRING_DATASOURCE_PASSWORD: carhive123
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
+
+      JWT_SECRET_KEY: s/QfOkxmGPQ0H+rECvoZnSXv0OonOCE1BNTIOmcqytk9yKS1NvITm3h+9nB0kZvTD+gTfX6v3NaD0Gg73IGbSQ==
+      SECURITY_JWT_EXPIRATION_TIME: 86400000
+
+      SERVER_PORT: 8080
+
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: DEBUG
+      LOGGING_LEVEL_ORG_APACHE_CATALINA_CORE: DEBUG
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+  frontend-angular:
+    build:
+      context: ./frontend/car-Front-end-Angular
+      dockerfile: Dockerfile
+    container_name: carhive-frontend-angular
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
+    volumes:
+      - ./frontend/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - app-network
+
+  frontend-vue:
+    build:
+      context: ./frontend/car-hive-vueJs
+      dockerfile: Dockerfile
+    container_name: carhive-frontend-vue
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - app-network
+
+volumes:
+  carhive-data:
+
+networks:
+  app-network:
+    driver: bridge

@@ -34,7 +34,6 @@ const handleSubmit = async (car: Credantials) => {
     success.value = res?.message || 'Voiture enregistrée !'
     Object.keys(car).forEach((k) => (car[k as keyof Credantials] = ''))
   } catch (e: string | unknown) {
-    console.log('Error: ', e)
     error.value = typeof e === 'string' ? e : 'Une erreur inconnue est survenue'
   } finally {
     loading.value = false
