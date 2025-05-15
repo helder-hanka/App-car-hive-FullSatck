@@ -27,6 +27,8 @@ export const fetchCarsUser = async (): Promise<Car[]> => {
 export const postCar = async (car: Credantials): Promise<any> => {
   try {
     const response = await axiosInstance.post<Car>(`voiture/create`, car)
+    // console.log('Post: ', response)
+
     return response.data
   } catch (err: any) {
     throw catchError(err)

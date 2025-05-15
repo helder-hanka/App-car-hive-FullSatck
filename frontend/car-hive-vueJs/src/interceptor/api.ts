@@ -33,7 +33,7 @@ export function setupInterceptors(authStore: AuthStore) {
     (response) => response,
     (error) => {
       if (error.response?.status === 401) {
-        authStore.clearAuth()
+        // authStore.clearAuth()
       }
       return Promise.reject(error)
     },
