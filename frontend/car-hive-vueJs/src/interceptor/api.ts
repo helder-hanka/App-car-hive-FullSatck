@@ -2,8 +2,6 @@ import axios from 'axios'
 
 const API_URL = 'http://localhost:8080'
 
-// const authStore = useAuthStore()
-
 const axiosInstance = axios.create({
   baseURL: API_URL,
   headers: {
@@ -33,7 +31,7 @@ export function setupInterceptors(authStore: AuthStore) {
     (response) => response,
     (error) => {
       if (error.response?.status === 401) {
-        // authStore.clearAuth()
+        authStore.clearAuth()
       }
       return Promise.reject(error)
     },

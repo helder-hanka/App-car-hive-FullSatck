@@ -40,7 +40,11 @@ export class AddCarComponent implements OnInit {
 
   onSubmitForm() {
     if (this.mainForm.valid) {
-      this.carService.addCar(this.mainForm.value).subscribe({
+      const newMainForm = {
+        ...this.mainForm.value,
+        annee: this.formatDate(this.mainForm.value.annee),
+      };
+      this.carService.addCar(newMainForm).subscribe({
         next: (addCar) => {
           this.successMsg = 'Voiture ajouter avec succés !';
           this.errorMessage = '';
@@ -57,5 +61,16 @@ export class AddCarComponent implements OnInit {
       this.errorMessage = 'Veuillez remplir tous les champs obligatoires.';
       this.successMsg = '';
     }
+  }
+
+  private formatDate(rawDate: Date): string {
+    if (rawDate) {
+      const dateObj = new Date(rawDate);
+      const year = dateObj.getFullYear();
+      const month = ('0' + (dateObj.getMonth() + 1)).slice(-2);
+      const day = ('0' + dateObj.getDate()).slice(-2);
+      return `${year}-${month}-${day}`;
+    }
+    return ''; // Default return value if rawDate is falsy
   }
 }
