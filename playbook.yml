@@ -1,5 +1,6 @@
-- hosts: carhive_servers
-  remote_user: docker_admin
+---
+- name: Deploiement de L'Application CarHIVE
+  hosts: debian_serv
   become: yes
 
   vars:
