@@ -9,7 +9,7 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout Repository') {
             steps {
                 git branch: 'main', url: 'https://github.com/helder-hanka/App-car-hive-FullSatck.git'
             }
@@ -22,7 +22,7 @@ pipeline {
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage('Push Images to Docker Hub') {
             steps {
                 withDockerRegistry([credentialsId: "$DOCKER_CREDENTIALS_ID", url: '']) {
                     sh 'docker push $DOCKER_IMAGE_BACKEND'
@@ -30,14 +30,5 @@ pipeline {
                 }
             }
         }
-
-        stage('Deploy on Server') {
-            steps {
-                sshagent(["08a85a85-b192-4db5-bc04-7066e8183714"]) {
-                    sh "ssh docker_admin@192.168.1.26 'cd /app && docker compose pull && docker compose up -d'"
-                }
-            }
-        }
     }
 }
-
