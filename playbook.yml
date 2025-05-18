@@ -16,5 +16,5 @@
       command: docker run -d --name carhive-frontend-angular -p {{ port_angular }}:80 ascandar/carhive-frontend-angular:latest
 
     - name: Lancer le frontend Vue.js
-      command: docker run -d --name carhive-frontend-vue -p  {{ port_vue.js }}:80 ascandar/carhive-frontend-vue:latest
+      command: docker run -d --name carhive-frontend-vue -p {{ port_vue.js }}:80 ascandar/carhive-frontend-vue:latest
 
