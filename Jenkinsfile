@@ -33,7 +33,7 @@ pipeline {
 
         stage('Deploy on Server') {
             steps {
-                sshagent(["ssh-server"]) {
+                sshagent(["08a85a85-b192-4db5-bc04-7066e8183714"]) {
                     sh "ssh docker_admin@192.168.1.26 'cd /app && docker compose pull && docker compose up -d'"
                 }
             }
