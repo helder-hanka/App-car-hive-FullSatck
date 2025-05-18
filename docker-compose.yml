@@ -1,4 +1,4 @@
-version: "3.9"
+# version: "3.9"
 
 services:
   db:
@@ -12,7 +12,7 @@ services:
     volumes:
       - carhive-data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5438:5432"
     networks:
       - app-network
 
@@ -24,7 +24,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: admin@gmail.com
       PGADMIN_DEFAULT_PASSWORD: admin123
     ports:
-      - "8081:80"
+      - "8083:80"
     networks:
       - app-network
 
@@ -54,7 +54,7 @@ services:
       LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: DEBUG
       LOGGING_LEVEL_ORG_APACHE_CATALINA_CORE: DEBUG
     ports:
-      - "8080:8080"
+      - "8082:8080"
     networks:
       - app-network
 
