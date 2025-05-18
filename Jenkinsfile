@@ -2,16 +2,16 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_USERNAME = "ton-utilisateur-docker-hub"
-        DOCKER_IMAGE_BACKEND = "ton-utilisateur-docker-hub/carhive-backend"
-        DOCKER_IMAGE_FRONTEND = "ton-utilisateur-docker-hub/carhive-frontend-angular"
+        DOCKER_USERNAME = "ascandar"
+        DOCKER_IMAGE_BACKEND = "ascandar/carhive-backend"
+        DOCKER_IMAGE_FRONTEND = "ascandar/carhive-frontend-angular"
         DOCKER_CREDENTIALS_ID = "docker-hub-credentials"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/ton-utilisateur/carhive.git'
+                git branch: 'main', url: 'https://github.com/helder-hanka/App-car-hive-FullSatck.git'
             }
         }
 
@@ -34,7 +34,7 @@ pipeline {
         stage('Deploy on Server') {
             steps {
                 sshagent(["ssh-server"]) {
-                    sh "ssh user@ton-ip-du-serveur 'cd /app && docker compose pull && docker compose up -d'"
+                    sh "ssh docker_admin@192.168.1.26 'cd /app && docker compose pull && docker compose up -d'"
                 }
             }
         }
