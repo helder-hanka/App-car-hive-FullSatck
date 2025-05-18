@@ -1,0 +1,19 @@
+- hosts: carhive_servers
+  remote_user: docker_admin
+  become: yes
+
+  vars:
+    port_backend: 8082
+    port_angular: 4200
+    port_vue.js: 3000
+
+  tasks:
+    - name: Lancer le backend
+      command: docker run -d --name carhive-backend -p {{ port_backend }}:8080 ascandar/carhive-backend:latest
+
+    - name: Lancer le frontend Angular
+      command: docker run -d --name carhive-frontend-angular -p {{ port_angular }}:80 ascandar/carhive-frontend-angular:latest
+
+    - name: Lancer le frontend Vue.js
+      command: docker run -d --name carhive-frontend-vue -p  {{ port_vue.js }}:80 ascandar/carhive-frontend-vue:latest
+
