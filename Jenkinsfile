@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Checkout Repository') {
             steps {
-                git branch: 'main', url: 'https://github.com/helder-hanka/App-car-hive-FullSatck.git'
+                git branch: 'alex_jenkins', url: 'https://github.com/helder-hanka/App-car-hive-FullSatck.git'
             }
         }
 
