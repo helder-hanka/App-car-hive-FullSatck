@@ -1,21 +1,79 @@
 ---
-- name: Deploiement de L'Application CarHIVE
+- name: Déploiement complet de l'application CarHIVE
   hosts: debian_serv
   become: yes
 
   vars:
-    port_backend: 8084
-    port_angular: 4200
-    port_vue_js: 3000
+    db_user: carhive
+    db_password: carhive123
+    db_name: carhivedb
+    db_port: 5432
+    exposed_db_port: 5438
+
+    backend_port: 8084
+    angular_port: 4200
+    vue_port: 3000
+    pgadmin_port: 8083
+
+    network_name: carhive-net
 
   tasks:
+    - name: Creation du réseau Docker 
+      command: docker network create {{ network_name }}
+      register: create_network
+      failed_when: false
+      changed_when: "'Error response from daemon: network with name' not in create_network.stderr"
 
-    - name: Lancer le backend
-      command: docker run -d --name carhive-backend -p {{ port_backend }}:8080 ascandar/carhive-backend:latest
+    - name: Démarrer PostgreSQL
+      command: >
+        docker run -d --name carhive-db
+        --network {{ network_name }}
+        -e POSTGRES_USER={{ db_user }}
+        -e POSTGRES_PASSWORD={{ db_password }}
+        -e POSTGRES_DB={{ db_name }}
+        -p {{ exposed_db_port }}:{{ db_port }}
+        -v carhive-data:/var/lib/postgresql/data
+        postgres:16
+      args:
+        creates: /var/lib/docker/volumes/carhive-data
 
-    - name: Lancer le frontend Angular
-      command: docker run -d --name carhive-frontend-angular -p {{ port_angular }}:80 ascandar/carhive-frontend-angular:latest
+    - name: Démarrer pgAdmin (optionnel)
+      command: >
+        docker run -d --name carhive-pgadmin
+        --network {{ network_name }}
+        -e PGADMIN_DEFAULT_EMAIL=admin@gmail.com
+        -e PGADMIN_DEFAULT_PASSWORD=admin123
+        -p {{ pgadmin_port }}:80
+        dpage/pgadmin4
 
-    - name: Lancer le frontend Vue.js
-      command: docker run -d --name carhive-frontend-vue -p {{ port_vue_js }}:80 ascandar/carhive-frontend-vue:latest
+    - name: Démarrer le backend
+      command: >
+        docker run -d --name carhive-backend
+        --network {{ network_name }}
+        -p {{ backend_port }}:8080
+        -e SPRING_DATASOURCE_URL=jdbc:postgresql://carhive-db:{{ db_port }}/{{ db_name }}
+        -e SPRING_DATASOURCE_USERNAME={{ db_user }}
+        -e SPRING_DATASOURCE_PASSWORD={{ db_password }}
+        -e SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+        -e SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+        -e SPRING_JPA_HIBERNATE_DDL_AUTO=update
+        -e SPRING_JPA_SHOW_SQL=true
+        -e SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL=true
+        -e JWT_SECRET_KEY=s/QfOkxmGPQ0H+rECvoZnSXv0OonOCE1BNTIOmcqytk9yKS1NvITm3h+9nB0kZvTD+gTfX6v3NaD0Gg73IGbSQ==
+        -e SECURITY_JWT_EXPIRATION_TIME=86400000
+        ascandar/carhive-backend:latest
+
+    - name: Démarrer le frontend Angular
+      command: >
+        docker run -d --name carhive-frontend-angular
+        --network {{ network_name }}
+        -p {{ angular_port }}:80
+        ascandar/carhive-frontend-angular:latest
+
+    - name: Démarrer le frontend Vue.js
+      command: >
+        docker run -d --name carhive-frontend-vue
+        --network {{ network_name }}
+        -p {{ vue_port }}:80
+        ascandar/carhive-frontend-vue:latest
 
