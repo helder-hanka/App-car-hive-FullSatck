@@ -9,6 +9,7 @@
     port_vue_js: 3000
 
   tasks:
+
     - name: Lancer le backend
       command: docker run -d --name carhive-backend -p {{ port_backend }}:8080 ascandar/carhive-backend:latest
 
