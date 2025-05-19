@@ -4,7 +4,7 @@
   become: yes
 
   vars:
-    port_backend: 8082
+    port_backend: 8084
     port_angular: 4200
     port_vue_js: 3000
 
