@@ -2,7 +2,7 @@ FROM jenkins/jenkins:lts
 
 USER root
 
-# Installer Docker CLI (pour permettre à Jenkins d'utiliser Docker)
+# Installer Docker, Git, cURL, sudo
 RUN apt-get update && apt-get install -y \
     docker.io \
     curl \
@@ -10,6 +10,12 @@ RUN apt-get update && apt-get install -y \
     unzip \
     sudo \
     git
+
+# ✅ Installer Java 21 (OpenJDK)
+RUN curl -fsSL https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.tar.gz | tar -xz -C /opt/ \
+    && ln -s /opt/jdk-21 /opt/java
+ENV JAVA_HOME=/opt/java
+ENV PATH=$JAVA_HOME/bin:$PATH
 
 # Installer Maven
 RUN curl -fsSL https://downloads.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz | tar -xz -C /opt/ \
@@ -20,6 +26,10 @@ ENV PATH=$MAVEN_HOME/bin:$PATH
 # Installer Node.js + npm
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs
+
+# (Optionnel) Installer Docker Compose v2
+RUN curl -SL https://github.com/docker/compose/releases/download/v2.27.1/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose \
+    && chmod +x /usr/local/bin/docker-compose
 
 # Donner accès Docker au user Jenkins
 RUN usermod -aG docker jenkins
