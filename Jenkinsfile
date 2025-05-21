@@ -11,15 +11,21 @@ pipeline {
   }
 
   stages {
+
     stage('📥 Checkout') {
       steps {
-        // git url:'https://github.com/helder-hanka/App-car-hive-FullSatck.git', branch: 'feature/test-ci'
         echo "📥 Récupération du code..."
         checkout scm
       }
     }
 
     stage('🛠️ Build Backend') {
+      agent {
+        docker {
+          image 'maven:3.9.6-eclipse-temurin-17'
+          args '-v $HOME/.m2:/root/.m2'
+        }
+      }
       steps {
         echo "⚙️ Build du backend Spring Boot..."
         dir("${BACKEND_DIR}") {
@@ -34,7 +40,13 @@ pipeline {
           when {
             expression { fileExists("${ANGULAR_DIR}/angular.json") }
           }
+          agent {
+            docker {
+              image 'node:20'
+            }
+          }
           steps {
+            echo "⚙️ Build du frontend Angular..."
             dir("${ANGULAR_DIR}") {
               sh 'npm install'
               sh 'npm run build --prod'
@@ -46,7 +58,13 @@ pipeline {
           when {
             expression { fileExists("${VUE_DIR}/vite.config.ts") }
           }
+          agent {
+            docker {
+              image 'node:20'
+            }
+          }
           steps {
+            echo "⚙️ Build du frontend Vue..."
             dir("${VUE_DIR}") {
               sh 'npm install'
               sh 'npm run build --prod'
@@ -59,15 +77,27 @@ pipeline {
     stage('✅ Tests') {
       parallel {
         stage('Backend Tests') {
+          agent {
+            docker {
+              image 'maven:3.9.6-eclipse-temurin-17'
+              args '-v $HOME/.m2:/root/.m2'
+            }
+          }
           steps {
             dir("${BACKEND_DIR}") {
               sh 'mvn test'
             }
           }
         }
+
         stage('Frontend Angular Tests') {
           when {
             expression { fileExists("${ANGULAR_DIR}/angular.json") }
+          }
+          agent {
+            docker {
+              image 'node:20'
+            }
           }
           steps {
             dir("${ANGULAR_DIR}") {
@@ -75,9 +105,15 @@ pipeline {
             }
           }
         }
+
         stage('Frontend Vue Tests') {
           when {
             expression { fileExists("${VUE_DIR}/vite.config.ts") }
+          }
+          agent {
+            docker {
+              image 'node:20'
+            }
           }
           steps {
             dir("${VUE_DIR}") {
@@ -91,6 +127,7 @@ pipeline {
     stage('📦 Build & Push Docker Images') {
       steps {
         script {
+          echo "🐳 Création des images Docker..."
           docker.withRegistry('', DOCKERHUB_CREDENTIALS) {
             def backendImage = docker.build("${DOCKERHUB_REPO}-backend:${BUILD_TAG}", "${BACKEND_DIR}")
             backendImage.push()
@@ -103,6 +140,7 @@ pipeline {
 
     stage('🚀 Deploy with Docker Compose') {
       steps {
+        echo "🚀 Lancement des conteneurs..."
         sh 'docker-compose up -d'
       }
     }
