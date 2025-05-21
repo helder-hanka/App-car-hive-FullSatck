@@ -13,7 +13,7 @@ pipeline {
   stages {
     stage('📥 Checkout') {
       steps {
-        git 'https://ton-repo-git.git'
+        git 'https://github.com/helder-hanka/App-car-hive-FullSatck.git', branch: 'main'
       }
     }
 
