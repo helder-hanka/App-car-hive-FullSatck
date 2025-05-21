@@ -13,12 +13,15 @@ pipeline {
   stages {
     stage('📥 Checkout') {
       steps {
-        git url:'https://github.com/helder-hanka/App-car-hive-FullSatck.git', branch: 'feature/test-ci'
+        // git url:'https://github.com/helder-hanka/App-car-hive-FullSatck.git', branch: 'feature/test-ci'
+        echo "📥 Récupération du code..."
+        checkout scm
       }
     }
 
     stage('🛠️ Build Backend') {
       steps {
+        echo "⚙️ Build du backend Spring Boot..."
         dir("${BACKEND_DIR}") {
           sh 'mvn clean package -DskipTests'
         }
