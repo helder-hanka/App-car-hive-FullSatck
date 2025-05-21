@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  jenkins:
+    build: .
+    container_name: jenkins-casc-confings
+    restart: always
+    ports:
+      - "8082:8080" # Jenkins UI
+      - "50000:50000" # Agent communication
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock # Permet à Jenkins de contrôler Docker
+      # - ./casc:/var/jenkins_home/casc_configs
+      # - ./init.groovy.d:/var/jenkins_home/init.groovy.d
+    environment:
+      - CASC_JENKINS_CONFIG=/var/jenkins_home/casc_configs/jenkins.yaml
+
+volumes:
+  jenkins_home:

@@ -1,83 +1,116 @@
 pipeline {
-  agent any // Utilise un agent Jenkins libre (machine Jenkins ou container)
+  agent any
 
   environment {
-    COMPOSE_FILE = 'docker-compose.yml' // Fichier docker-compose utilisé
-  }
-
-  options {
-    timestamps() // Affiche l’heure dans les logs
-    skipStagesAfterUnstable() // Arrête les étapes suivantes si une est instable
+    BACKEND_DIR = 'backend/Projet_Spring_Boot-CarHive'
+    ANGULAR_DIR = 'frontend/car-Front-end-Angular'
+    VUE_DIR = 'frontend/car-hive-vueJs'
+    DOCKERHUB_CREDENTIALS = 'dockerhub_id'
+    DOCKERHUB_REPO = 'tonutilisateur/carhive'
+    BUILD_TAG = "${env.BUILD_NUMBER}"
   }
 
   stages {
-    // 1️⃣ Phase de récupération du code source
-    stage('Checkout') {
+    stage('📥 Checkout') {
       steps {
-        echo '📥 Clonage du dépôt...'
-        checkout scm // clone le dépôt Git relié au job Jenkins
+        git 'https://ton-repo-git.git'
       }
     }
 
-    // 2️⃣ Build du backend Java Spring Boot
-    stage('Build Backend') {
+    stage('🛠️ Build Backend') {
       steps {
-        echo '⚙️ Compilation du backend Spring Boot...'
-        dir('backend/Projet_Spring_Boot-CarHive') {
-          sh 'mvn clean package -DskipTests' // compile sans lancer les tests
+        dir("${BACKEND_DIR}") {
+          sh 'mvn clean package -DskipTests'
         }
       }
     }
 
-    // 3️⃣ Build du frontend Angular
-    stage('Build Frontend Angular') {
-      steps {
-        echo '⚙️ Build Angular...'
-        dir('frontend/car-Front-end-Angular') {
-          sh 'npm install'
-          sh 'npm run build --prod'
+    stage('🛠️ Build Frontend') {
+      parallel {
+        stage('Angular') {
+          when {
+            expression { fileExists("${ANGULAR_DIR}/angular.json") }
+          }
+          steps {
+            dir("${ANGULAR_DIR}") {
+              sh 'npm install'
+              sh 'npm run build --prod'
+            }
+          }
+        }
+
+        stage('Vue') {
+          when {
+            expression { fileExists("${VUE_DIR}/vite.config.ts") }
+          }
+          steps {
+            dir("${VUE_DIR}") {
+              sh 'npm install'
+              sh 'npm run build --prod'
+            }
+          }
         }
       }
     }
 
-    // 4️⃣ Build du frontend Vue.js
-    stage('Build Frontend Vue') {
-      steps {
-        echo '⚙️ Build Vue.js...'
-        dir('frontend/car-hive-vueJs') {
-          sh 'npm install'
-          sh 'npm run build --prod'
+    stage('✅ Tests') {
+      parallel {
+        stage('Backend Tests') {
+          steps {
+            dir("${BACKEND_DIR}") {
+              sh 'mvn test'
+            }
+          }
+        }
+        stage('Frontend Angular Tests') {
+          when {
+            expression { fileExists("${ANGULAR_DIR}/angular.json") }
+          }
+          steps {
+            dir("${ANGULAR_DIR}") {
+              sh 'npm run test -- --watch=false'
+            }
+          }
+        }
+        stage('Frontend Vue Tests') {
+          when {
+            expression { fileExists("${VUE_DIR}/vite.config.ts") }
+          }
+          steps {
+            dir("${VUE_DIR}") {
+              sh 'npm run test'
+            }
+          }
         }
       }
     }
 
-    // 5️⃣ Build des images Docker
-    stage('Docker Compose Build') {
+    stage('📦 Build & Push Docker Images') {
       steps {
-        echo '🐳 Build des images Docker...'
-        sh 'docker-compose build'
+        script {
+          docker.withRegistry('', DOCKERHUB_CREDENTIALS) {
+            def backendImage = docker.build("${DOCKERHUB_REPO}-backend:${BUILD_TAG}", "${BACKEND_DIR}")
+            backendImage.push()
+            def frontendImage = docker.build("${DOCKERHUB_REPO}-frontend:${BUILD_TAG}", "${ANGULAR_DIR}")
+            frontendImage.push()
+          }
+        }
       }
     }
 
-    // 6️⃣ Démarrage des containers
-    stage('Docker Compose Up') {
+    stage('🚀 Deploy with Docker Compose') {
       steps {
-        echo '🚀 Lancement des services via Docker Compose...'
         sh 'docker-compose up -d'
       }
     }
   }
 
-  // 🔁 Étapes de post-pipeline
   post {
     success {
-      echo '✅ Déploiement terminé avec succès !'
+      echo "✅ Déploiement réussi"
     }
     failure {
-      echo '❌ Échec du pipeline.'
-    }
-    always {
-      echo '🧹 Nettoyage temporaire (si besoin)...'
+      echo "❌ Échec du pipeline"
     }
   }
 }

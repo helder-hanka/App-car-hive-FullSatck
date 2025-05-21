@@ -1,6 +1,0 @@
-carhive-Pipeline multibranch/alex_jenkins
-ipeline_multibranch_alex_jenkins
-carhive-Pipeline multibranch/jenkins
-ive-Pipeline_multibranch_jenkins
-carhive-Pipeline multibranch/main
-arhive-Pipeline_multibranch_main
