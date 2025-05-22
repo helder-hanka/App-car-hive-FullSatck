@@ -19,6 +19,8 @@ credentials:
       - credentials:
           - usernamePassword:
               id: "dockerhub_id"
-              username: "helder"
-              password: "helder123"
+              # username: "helder"
+              # password: "helder123"
+              username: "${DOCKERHUB_USERNAME}"
+              password: "${DOCKERHUB_PASSWORD}"
               description: "Docker Hub Credentials"
