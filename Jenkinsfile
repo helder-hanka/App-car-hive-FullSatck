@@ -1,38 +1,19 @@
 pipeline {
   agent any
 
-    environment {
+  environment {
     BACKEND_DIR = 'backend/Projet_Spring_Boot-CarHive'
     ANGULAR_DIR = 'frontend/car-Front-end-Angular'
     VUE_DIR = 'frontend/car-hive-vueJs'
     BUILD_TAG = "${env.BUILD_NUMBER}"
+    DOCKERHUB_REPO = credentials('dockerhub_repo') // 🔐 Récupéré via Jenkins
   }
-
 
   stages {
     stage('📥 Checkout') {
       steps {
-         echo "📥 Récupération du code..."
+        echo "📥 Récupération du code..."
         checkout scm
-      }
-    }
-
-    stage('🔄 Charger .env') {
-      steps {
-        echo "🔄 Chargement des variables d'environnement depuis .env"
-        script {
-          def envMap = readFile('.env')
-            .split('\n')
-            .findAll { it && !it.startsWith('#') }
-            .collectEntries { line ->
-              def (key, value) = line.split('=')
-              [(key.trim()): value.trim()]
-            }
-
-          envMap.each { key, value ->
-            env."${key}" = value
-          }
-        }
       }
     }
 
@@ -44,7 +25,7 @@ pipeline {
         }
       }
       steps {
-         echo "⚙️ Build du backend Spring Boot..."
+        echo "⚙️ Build du backend Spring Boot..."
         dir("${BACKEND_DIR}") {
           sh 'mvn clean package -DskipTests'
         }
@@ -59,7 +40,7 @@ pipeline {
             docker { image 'node:20' }
           }
           steps {
-             echo "⚙️ Build du frontend Angular..."
+            echo "⚙️ Build du frontend Angular..."
             dir("${ANGULAR_DIR}") {
               sh 'npm install'
               sh 'npm run build --prod'
@@ -73,7 +54,7 @@ pipeline {
             docker { image 'node:20' }
           }
           steps {
-             echo "⚙️ Build du frontend Vue..."
+            echo "⚙️ Build du frontend Vue..."
             dir("${VUE_DIR}") {
               sh 'npm install'
               sh 'npm run build --prod'
