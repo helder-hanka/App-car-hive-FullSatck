@@ -21,7 +21,7 @@ pipeline {
       agent {
         docker {
           image 'maven:3.9.6-eclipse-temurin-17'
-          args '-v $HOME/.m2:/root/.m2'
+          args '-v $HOME/.m2:/root/.m2 -v /var/run/docker.sock:/var/run/docker.sock'
         }
       }
       steps {
@@ -37,7 +37,10 @@ pipeline {
         stage('Angular') {
           when { expression { fileExists("${ANGULAR_DIR}/angular.json") } }
           agent {
-            docker { image 'node:20' }
+            docker {
+              image 'node:20'
+              args '-v /var/run/docker.sock:/var/run/docker.sock'
+            }
           }
           steps {
             echo "⚙️ Build du frontend Angular..."
@@ -51,7 +54,10 @@ pipeline {
         stage('Vue') {
           when { expression { fileExists("${VUE_DIR}/vite.config.ts") } }
           agent {
-            docker { image 'node:20' }
+            docker {
+              image 'node:20'
+              args '-v /var/run/docker.sock:/var/run/docker.sock'
+            }
           }
           steps {
             echo "⚙️ Build du frontend Vue..."
@@ -70,7 +76,7 @@ pipeline {
           agent {
             docker {
               image 'maven:3.9.6-eclipse-temurin-17'
-              args '-v $HOME/.m2:/root/.m2'
+              args '-v $HOME/.m2:/root/.m2 -v /var/run/docker.sock:/var/run/docker.sock'
             }
           }
           steps {
@@ -82,7 +88,12 @@ pipeline {
 
         stage('Frontend Angular Tests') {
           when { expression { fileExists("${ANGULAR_DIR}/angular.json") } }
-          agent { docker { image 'node:20' } }
+          agent {
+            docker {
+              image 'node:20'
+              args '-v /var/run/docker.sock:/var/run/docker.sock'
+            }
+          }
           steps {
             dir("${ANGULAR_DIR}") {
               sh 'npm run test -- --watch=false'
@@ -92,7 +103,12 @@ pipeline {
 
         stage('Frontend Vue Tests') {
           when { expression { fileExists("${VUE_DIR}/vite.config.ts") } }
-          agent { docker { image 'node:20' } }
+          agent {
+            docker {
+              image 'node:20'
+              args '-v /var/run/docker.sock:/var/run/docker.sock'
+            }
+          }
           steps {
             dir("${VUE_DIR}") {
               sh 'npm run test'
