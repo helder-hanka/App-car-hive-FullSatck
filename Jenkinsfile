@@ -2,131 +2,61 @@ pipeline {
   agent any
 
   environment {
-    BACKEND_DIR = 'backend/Projet_Spring_Boot-CarHive'
-    ANGULAR_DIR = 'frontend/car-Front-end-Angular'
-    VUE_DIR = 'frontend/car-hive-vueJs'
-    BUILD_TAG = "${env.BUILD_NUMBER}"
-    DOCKERHUB_REPO = credentials('dockerhub_repo') // 🔐 Jenkins credential
+    DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds') // Stockés dans Jenkins
+    IMAGE_NAME = "helder78/carhive-backend"
   }
 
   stages {
-    stage('📥 Checkout') {
+    stage('Checkout') {
       steps {
-        echo "📥 Récupération du code..."
         checkout scm
       }
     }
 
-    stage('🛠️ Build Backend') {
+    stage('Backend Tests') {
       steps {
-        echo "⚙️ Build du backend Spring Boot..."
-        withDockerContainer(image: 'maven:3.9.6-eclipse-temurin-17', args: '-v $HOME/.m2:/root/.m2 -v /var/run/docker.sock:/var/run/docker.sock') {
-          dir("${BACKEND_DIR}") {
-            sh 'mvn clean package -DskipTests'
-          }
+        dir('backend/Projet_Spring_Boot-CarHive') {
+          sh './mvnw test'
         }
       }
     }
 
-    stage('🛠️ Build Frontend') {
-      parallel {
-        stage('Angular') {
-          when { expression { fileExists("${ANGULAR_DIR}/angular.json") } }
-          steps {
-            echo "⚙️ Build du frontend Angular..."
-            withDockerContainer(image: 'node:20', args: '-v /var/run/docker.sock:/var/run/docker.sock') {
-              dir("${ANGULAR_DIR}") {
-                sh 'npm install'
-                sh 'npm run build --prod'
-              }
-            }
-          }
-        }
-
-        stage('Vue') {
-          when { expression { fileExists("${VUE_DIR}/vite.config.ts") } }
-          steps {
-            echo "⚙️ Build du frontend Vue..."
-            withDockerContainer(image: 'node:20', args: '-v /var/run/docker.sock:/var/run/docker.sock') {
-              dir("${VUE_DIR}") {
-                sh 'npm install'
-                sh 'npm run build --prod'
-              }
-            }
-          }
-        }
-      }
-    }
-
-    stage('✅ Tests') {
-      parallel {
-        stage('Backend Tests') {
-          steps {
-            withDockerContainer(image: 'maven:3.9.6-eclipse-temurin-17', args: '-v $HOME/.m2:/root/.m2 -v /var/run/docker.sock:/var/run/docker.sock') {
-              dir("${BACKEND_DIR}") {
-                sh 'mvn test'
-              }
-            }
-          }
-        }
-
-        stage('Frontend Angular Tests') {
-          when { expression { fileExists("${ANGULAR_DIR}/angular.json") } }
-          steps {
-            withDockerContainer(image: 'node:20', args: '-v /var/run/docker.sock:/var/run/docker.sock') {
-              dir("${ANGULAR_DIR}") {
-                sh 'npm run test -- --watch=false'
-              }
-            }
-          }
-        }
-
-        stage('Frontend Vue Tests') {
-          when { expression { fileExists("${VUE_DIR}/vite.config.ts") } }
-          steps {
-            withDockerContainer(image: 'node:20', args: '-v /var/run/docker.sock:/var/run/docker.sock') {
-              dir("${VUE_DIR}") {
-                sh 'npm run test'
-              }
-            }
-          }
-        }
-      }
-    }
-
-    stage('📦 Build & Push Docker Images') {
+    stage('Build & Push Backend Image') {
       steps {
         script {
-          echo "🐳 Création des images Docker..."
-          withCredentials([usernamePassword(credentialsId: 'dockerhub_id', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-            sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-
-            def backendImage = docker.build("${DOCKERHUB_REPO}-backend:${BUILD_TAG}", "${BACKEND_DIR}")
-            backendImage.push()
-
-            def frontendImage = docker.build("${DOCKERHUB_REPO}-frontend:${BUILD_TAG}", "${ANGULAR_DIR}")
-            frontendImage.push()
+          docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
+            def app = docker.build("${IMAGE_NAME}:${BUILD_NUMBER}", 'backend/Projet_Spring_Boot-CarHive')
+            app.push()
           }
         }
       }
     }
 
-    stage('🚀 Deploy with Docker Compose') {
+    stage('Build Angular Frontend') {
       steps {
-        echo "🚀 Lancement des conteneurs..."
-        sh 'docker-compose up -d'
+        dir('frontend/car-Front-end-Angular') {
+          sh 'npm install && npm run build'
+        }
+      }
+    }
+
+    stage('Build Vue Frontend') {
+      steps {
+        dir('frontend/car-hive-vueJs') {
+          sh 'npm install && npm run build'
+        }
+      }
+    }
+
+    stage('Deploy with Docker Compose') {
+      steps {
+        sh 'docker-compose down || true'
+        sh 'docker-compose up -d --build'
       }
     }
   }
+}
 
-  post {
-    success {
-      echo "✅ Déploiement réussi"
-    }
-    failure {
-      echo "❌ Échec du pipeline"
-    }
-  }
 }
 
 
