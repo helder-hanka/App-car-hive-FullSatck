@@ -10,6 +10,8 @@ target/
 *.jar
 *.war
 *.iml
+src/main/resources/application-prod.properties
+
 
 # General
 .DS_Store
