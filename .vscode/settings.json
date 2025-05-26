@@ -1,5 +1,4 @@
 {
   "java.configuration.updateBuildConfiguration": "disabled",
-  "java.compile.nullAnalysis.mode": "automatic",
-  "cSpell.words": ["carhive", "creds", "DOCKERHUB", "helder", "mvnw", "Projet"]
+  "java.compile.nullAnalysis.mode": "automatic"
 }
