@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.time.LocalDate;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -92,7 +91,7 @@ class CarHiveApplicationTests {
 		voitureRequest.setImmatriculation("XYZ-789");
 		voitureRequest.setMarque("Toyota");
 		voitureRequest.setModele("Corolla");
-		voitureRequest.setAnnee(LocalDate.parse("2022-01-01T00:00:00"));
+		voitureRequest.setAnnee("2022");
 		voitureRequest.setColor("Rouge");
 		voitureRequest.setNomGarage("Mon Garage");
 		voitureRequest.setAdresseGarage("123 Rue Principale");
@@ -181,7 +180,7 @@ class CarHiveApplicationTests {
 		voiture.setImmatriculation("XYZ-789");
 		voiture.setMarque("Toyota");
 		voiture.setModele("Corolla");
-		voiture.setAnnee(LocalDate.parse("2022-01-01T00:00:00"));
+		voiture.setAnnee("2022");
 		voiture.setUserProfile(userProfile);
 
 		// Mock du profil utilisateur authentifié
@@ -228,7 +227,7 @@ class CarHiveApplicationTests {
 		voiture.setImmatriculation("XYZ-789");
 		voiture.setMarque("Toyota");
 		voiture.setModele("Corolla");
-		voiture.setAnnee(LocalDate.parse("2022-01-01T00:00:00"));
+		voiture.setAnnee("2022");
 		voiture.setUserProfile(userProfile);
 
 		// Mock du profil utilisateur authentifié
@@ -242,7 +241,7 @@ class CarHiveApplicationTests {
 		voitureRequest.setImmatriculation("ABC-123");
 		voitureRequest.setMarque("Honda");
 		voitureRequest.setModele("Civic");
-		voitureRequest.setAnnee(LocalDate.parse("2023-01-01T00:00:00"));
+		voitureRequest.setAnnee("2023");
 		voitureRequest.setColor("Red");
 		voitureRequest.setNomGarage("Garage A");
 		voitureRequest.setAdresseGarage("123 Main Street");
@@ -284,14 +283,14 @@ class CarHiveApplicationTests {
 		voiture1.setImmatriculation("XYZ-789");
 		voiture1.setMarque("Toyota");
 		voiture1.setModele("Corolla");
-		voiture1.setAnnee(LocalDate.parse("2022-01-01T00:00:00"));
+		voiture1.setAnnee("2022");
 
 		Voiture voiture2 = new Voiture();
 		voiture2.setId(2L);
 		voiture2.setImmatriculation("ABC-123");
 		voiture2.setMarque("Honda");
 		voiture2.setModele("Civic");
-		voiture2.setAnnee(LocalDate.parse("2023-01-01T00:00:00"));
+		voiture2.setAnnee("2023");
 
 		List<Voiture> voitures = Arrays.asList(voiture1, voiture2);
 

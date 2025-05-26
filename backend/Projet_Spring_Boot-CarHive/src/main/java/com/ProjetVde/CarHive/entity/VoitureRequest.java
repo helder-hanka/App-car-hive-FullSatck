@@ -1,11 +1,7 @@
 package com.ProjetVde.CarHive.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-
-import java.time.LocalDate;
 
 @Data
 public class VoitureRequest {
@@ -18,9 +14,8 @@ public class VoitureRequest {
     @NotBlank(message = "Le modèle est obligatoire")
     private String modele;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    @NotNull(message = "L'année est obligatoire")
-    private LocalDate annee;
+    @NotBlank(message = "L'année est obligatoire")
+    private String annee;
 
     @NotBlank(message = "La couleur est obligatoire")
     private String color;
