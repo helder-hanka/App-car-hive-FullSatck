@@ -2,8 +2,7 @@ pipeline {
   agent any
 
   environment {
-    DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds') // Stockés dans Jenkins
-    // IMAGE_NAME = "helder78/carhive-backend"
+    DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
     IMAGE_NAME = "helder"
 
     DOCKER_IMAGE_BACKEND = "helder/carhive-backend"
@@ -17,69 +16,68 @@ pipeline {
         checkout scm
       }
     }
-  }
 
-  stage('Build Docker Images') {
-    steps {
-      sh 'docker build -t $DOCKER_IMAGE_BACKEND ./backend/Projet_Spring_Boot-CarHive'
-      sh 'docker build -t $DOCKER_IMAGE_FRONTEND_ANGULAR ./frontend/car-Front-end-Angular'
-      sh 'docker build -t $DOCKER_IMAGE_FRONTEND_VUE ./frontend/car-hive-vueJs'
-    }
-  }
-
-  stage('Start DB') {
-    steps {
-      sh 'docker-compose up -d db'
-      sh 'sleep 10' 
-    }
-  }
-
-  stage('Backend Tests') {
-    steps {
-      dir('backend/Projet_Spring_Boot-CarHive') {
-        sh './mvnw test -Dspring.profiles.active=test'
-        // script {
-        //   def mvnHome = tool 'Maven 3.9.6'
-        //   sh "'${mvnHome}/bin/mvn' clean test"
-        // }
+    stage('Build Docker Images') {
+      steps {
+        sh 'docker build -t $DOCKER_IMAGE_BACKEND ./backend/Projet_Spring_Boot-CarHive'
+        sh 'docker build -t $DOCKER_IMAGE_FRONTEND_ANGULAR ./frontend/car-Front-end-Angular'
+        sh 'docker build -t $DOCKER_IMAGE_FRONTEND_VUE ./frontend/car-hive-vueJs'
       }
     }
-  }
 
-  stage('Build & Push Backend Image') {
-    steps {
-      script {
-        docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
-          def app = docker.build("${IMAGE_NAME}:${BUILD_NUMBER}", 'backend/Projet_Spring_Boot-CarHive')
-          app.push()
+    stage('Start DB') {
+      steps {
+        sh 'docker-compose up -d db'
+        sh 'sleep 10'
+      }
+    }
+
+    stage('Backend Tests') {
+      steps {
+        dir('backend/Projet_Spring_Boot-CarHive') {
+          sh './mvnw test -Dspring.profiles.active=test'
         }
       }
     }
-  }
 
-  stage('Build Angular Frontend') {
-    steps {
-      dir('frontend/car-Front-end-Angular') {
-        sh 'npm install && npm run build'
+    stage('Build & Push Backend Image') {
+      steps {
+        script {
+          docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
+            def app = docker.build("${DOCKER_IMAGE_BACKEND}:${BUILD_NUMBER}", 'backend/Projet_Spring_Boot-CarHive')
+            app.push()
+          }
+        }
       }
     }
-  }
 
-  stage('Build Vue Frontend') {
-    steps {
-      dir('frontend/car-hive-vueJs') {
-        sh 'npm install && npm run build'
+    stage('Build Angular Frontend') {
+      steps {
+        dir('frontend/car-Front-end-Angular') {
+          sh 'npm install'
+          sh 'npm run build'
+        }
       }
     }
-  }
 
-  stage('Deploy with Docker Compose') {
-    steps {
-      sh 'docker-compose down || true'
-      sh 'docker-compose up -d --build'
+    stage('Build Vue Frontend') {
+      steps {
+        dir('frontend/car-hive-vueJs') {
+          sh 'npm install'
+          sh 'npm run build'
+        }
+      }
+    }
+
+    stage('Deploy with Docker Compose') {
+      steps {
+        sh 'docker-compose down || true'
+        sh 'docker-compose up -d --build'
+      }
     }
   }
 }
+
 
 
 // pipeline {
