@@ -73,6 +73,7 @@ pipeline {
       steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
           // sh "echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin"
+          sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
           // withDockerRegistry([credentialsId: "$dockerhub_creds", url: '']) {
           sh "docker push $DOCKER_IMAGE_BACKEND"
           sh "docker push $DOCKER_IMAGE_FRONTEND_ANGULAR"
@@ -110,21 +111,40 @@ pipeline {
     //   }
     // }
 
+    // stage('Deploy with Docker Compose') {
+    //   steps {
+    //     withCredentials([
+    //       string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET_KEY'),
+    //       string(credentialsId: 'postgres-password', variable: 'POSTGRES_PASSWORD')
+    //     ]) {
+    //       withEnv([
+    //         "POSTGRES_DB=${env.POSTGRES_DB}",
+    //         "POSTGRES_USER=${env.POSTGRES_USER}",
+    //         "PGADMIN_EMAIL=${env.PGADMIN_EMAIL}",
+    //         "PGADMIN_PASSWORD=${env.PGADMIN_PASSWORD}",
+    //         "SECURITY_JWT_EXPIRATION_TIME=${env.SECURITY_JWT_EXPIRATION_TIME}"
+    //       ]) {
+    //         sh 'docker-compose -f docker-compose.yml up -d --build'
+    //       }
+    //     }
+    //   }
+    // }
+
     stage('Deploy with Docker Compose') {
       steps {
-        withCredentials([
-          string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET_KEY'),
-          string(credentialsId: 'postgres-password', variable: 'POSTGRES_PASSWORD')
-        ]) {
-          withEnv([
-            "POSTGRES_DB=${env.POSTGRES_DB}",
-            "POSTGRES_USER=${env.POSTGRES_USER}",
-            "PGADMIN_EMAIL=${env.PGADMIN_EMAIL}",
-            "PGADMIN_PASSWORD=${env.PGADMIN_PASSWORD}",
-            "SECURITY_JWT_EXPIRATION_TIME=${env.SECURITY_JWT_EXPIRATION_TIME}"
-          ]) {
-            sh 'docker-compose -f docker-compose.yml up -d --build'
-          }
+        withCredentials([string(credentialsId: 'postgres-password', variable: 'POSTGRES_PASSWORD')]) {
+          sh '''
+            echo "Déploiement Docker Compose en cours..."
+            
+            # Crée un fichier temporaire .env sécurisé
+            echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" > .env
+
+            # Déploie avec Docker Compose
+            docker-compose -f docker-compose.prod.yml --env-file .env up -d
+
+            # Nettoie le fichier .env
+            rm -f .env
+          '''
         }
       }
     }
