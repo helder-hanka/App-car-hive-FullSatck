@@ -71,8 +71,9 @@ pipeline {
 
     stage('Push Backend Image') {
       steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
-          sh "echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin"
+        // withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+          // sh "echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin"
+          withDockerRegistry([credentialsId: "$dockerhub_creds", url: '']) {
           sh "docker push $DOCKER_IMAGE_BACKEND"
           sh "docker push $DOCKER_IMAGE_FRONTEND_ANGULAR"
           sh "docker push $DOCKER_IMAGE_FRONTEND_VUE"
