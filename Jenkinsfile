@@ -61,14 +61,20 @@ pipeline {
     //   }
     // }
 
-    stage('Build & Push Backend Image') {
+    stage('Push Backend Image') {
       steps {
-        script {
-          docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
-            def app = docker.build("${IMAGE_NAME}:${BUILD_NUMBER}", 'backend/Projet_Spring_Boot-CarHive')
-            app.push()
-          }
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+          sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
+          sh "docker push $DOCKER_IMAGE_BACKEND"
+          sh "docker push $DOCKER_IMAGE_FRONTEND_ANGULAR"
+          sh "docker push $DOCKER_IMAGE_FRONTEND_VUE"
         }
+        // script {
+        //   docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
+        //     def app = docker.build("${IMAGE_NAME}:${BUILD_NUMBER}", 'backend/Projet_Spring_Boot-CarHive')
+        //     app.push()
+        //   }
+        // }
       }
     }
 
@@ -95,4 +101,36 @@ pipeline {
       }
     }
   }
+  post {
+    always {
+      cleanWs()
+    }
+    success {
+      echo 'Pipeline completed successfully!'
+    }
+    failure {
+      echo 'Pipeline failed!'
+    }
+  }
+  // options {
+  //   timeout(time: 1, unit: 'HOURS')
+  // }
+  // triggers {
+  //   pollSCM('H/15 * * * *') // Poll SCM every 15 minutes
+  // }
+  // tools {
+  //   maven 'Maven 3.6.3' // Specify the Maven version
+  //   jdk 'JDK 11' // Specify the JDK version
+  // }
+  // parameters {
+  //   string(name: 'DOCKERHUB_CREDENTIALS', defaultValue: '', description: 'DockerHub credentials ID')
+  //   string(name: 'IMAGE_NAME', defaultValue: 'helder', description: 'Base name for Docker images')
+  // }
+  // triggers {
+  //   cron('H/15 * * * *') // Poll SCM every 15 minutes
+  // }
+  // options {
+  //   disableConcurrentBuilds() // Prevent concurrent builds
+  //   buildDiscarder(logRotator(numToKeepStr: '10')) // Keep last 10 builds
+  // }
 }
