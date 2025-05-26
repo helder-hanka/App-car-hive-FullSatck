@@ -30,6 +30,7 @@ pipeline {
   stage('Start DB') {
     steps {
       sh 'docker-compose up -d db'
+      sh 'sleep 10' 
     }
   }
 
