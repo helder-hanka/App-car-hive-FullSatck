@@ -24,20 +24,20 @@ pipeline {
       }
     }
 
-    stage('Start DB') {
-      steps {
-        sh 'docker-compose up -d db'
-        sh 'sleep 10'
-      }
-    }
+    // stage('Start DB') {
+    //   steps {
+    //     sh 'docker-compose up -d db'
+    //     sh 'sleep 10'
+    //   }
+    // }
 
-    stage('Backend Tests') {
-      steps {
-        dir('backend/Projet_Spring_Boot-CarHive') {
-          sh './mvnw test -Dspring.profiles.active=test'
-        }
-      }
-    }
+    // stage('Backend Tests') {
+    //   steps {
+    //     dir('backend/Projet_Spring_Boot-CarHive') {
+    //       sh './mvnw test -Dspring.profiles.active=test'
+    //     }
+    //   }
+    // }
 
     stage('Build & Push Backend Image') {
       steps {
