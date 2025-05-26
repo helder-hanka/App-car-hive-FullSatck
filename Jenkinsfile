@@ -69,23 +69,39 @@ pipeline {
     //   }
     // }
 
+    // stage('Push Backend Image') {
+    //   steps {
+    //     // withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+    //       // sh "echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin"
+    //       withDockerRegistry([credentialsId: "$dockerhub_creds", url: '']) {
+    //       sh "docker push $DOCKER_IMAGE_BACKEND"
+    //       sh "docker push $DOCKER_IMAGE_FRONTEND_ANGULAR"
+    //       sh "docker push $DOCKER_IMAGE_FRONTEND_VUE"
+    //     }
+    //     // script {
+    //     //   docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
+    //     //     def app = docker.build("${IMAGE_NAME}:${BUILD_NUMBER}", 'backend/Projet_Spring_Boot-CarHive')
+    //     //     app.push()
+    //     //   }
+    //     // }
+    //   }
+    // }
+
     stage('Push Backend Image') {
-      steps {
-        // withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
-          // sh "echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin"
-          withDockerRegistry([credentialsId: "$dockerhub_creds", url: '']) {
-          sh "docker push $DOCKER_IMAGE_BACKEND"
-          sh "docker push $DOCKER_IMAGE_FRONTEND_ANGULAR"
-          sh "docker push $DOCKER_IMAGE_FRONTEND_VUE"
-        }
-        // script {
-        //   docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
-        //     def app = docker.build("${IMAGE_NAME}:${BUILD_NUMBER}", 'backend/Projet_Spring_Boot-CarHive')
-        //     app.push()
-        //   }
-        // }
-      }
+  steps {
+    withCredentials([
+      usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')
+    ]) {
+      sh '''
+        echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+        docker push $DOCKER_IMAGE_BACKEND
+        docker push $DOCKER_IMAGE_FRONTEND_ANGULAR
+        docker push $DOCKER_IMAGE_FRONTEND_VUE
+      '''
     }
+  }
+}
+
 
     // stage('Build Angular Frontend') {
     //   steps {
