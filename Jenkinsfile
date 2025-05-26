@@ -16,13 +16,35 @@ pipeline {
       }
     }
 
-    stage('Build Docker Images') {
+    stage('Build Docker Images for Backend and Frontend') {
       steps {
         sh 'docker build -t $DOCKER_IMAGE_BACKEND ./backend/Projet_Spring_Boot-CarHive'
-        sh 'docker build -t $DOCKER_IMAGE_FRONTEND_ANGULAR ./frontend/car-Front-end-Angular'
-        sh 'docker build -t $DOCKER_IMAGE_FRONTEND_VUE ./frontend/car-hive-vueJs'
       }
     }
+    stage('Build Docker Images for Frontend Angular') {
+      steps {
+        sh 'docker build -t $DOCKER_IMAGE_FRONTEND_ANGULAR ./frontend/car-Front-end-Angular'
+      }
+    }
+    stage('Build Docker Images for Frontend Vue') {
+      steps {
+        sh 'docker build -t $DOCKER_IMAGE_FRONTEND_VUE ./frontend/car-hive-vueJs'
+      }
+    }  
+    // stage('Build Docker Images') {
+    //   steps {
+    //     sh 'docker build -t $DOCKER_IMAGE_BACKEND ./backend/Projet_Spring_Boot-CarHive'
+    //     sh 'docker build -t $DOCKER_IMAGE_FRONTEND_ANGULAR ./frontend/car-Front-end-Angular'
+    //     sh 'docker build -t $DOCKER_IMAGE_FRONTEND_VUE ./frontend/car-hive-vueJs'
+    //   }
+    // }
+    // stage('Build Docker Images') {
+    //   steps {
+    //     sh 'docker build -t $DOCKER_IMAGE_BACKEND ./backend/Projet_Spring_Boot-CarHive'
+    //     sh 'docker build -t $DOCKER_IMAGE_FRONTEND_ANGULAR ./frontend/car-Front-end-Angular'
+    //     sh 'docker build -t $DOCKER_IMAGE_FRONTEND_VUE ./frontend/car-hive-vueJs'
+    //   }
+    // }
 
     // stage('Start DB') {
     //   steps {
@@ -50,21 +72,21 @@ pipeline {
       }
     }
 
-    stage('Build Angular Frontend') {
-      steps {
-        dir('frontend/car-Front-end-Angular') {
-          sh 'npm install && npm run build'
-        }
-      }
-    }
+    // stage('Build Angular Frontend') {
+    //   steps {
+    //     dir('frontend/car-Front-end-Angular') {
+    //       sh 'npm install && npm run build'
+    //     }
+    //   }
+    // }
 
-    stage('Build Vue Frontend') {
-      steps {
-        dir('frontend/car-hive-vueJs') {
-          sh 'npm install && npm run build'
-        }
-      }
-    }
+    // stage('Build Vue Frontend') {
+    //   steps {
+    //     dir('frontend/car-hive-vueJs') {
+    //       sh 'npm install && npm run build'
+    //     }
+    //   }
+    // }
 
     stage('Deploy with Docker Compose') {
       steps {
