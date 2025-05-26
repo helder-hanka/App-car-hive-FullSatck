@@ -4,9 +4,9 @@ pipeline {
   environment {
     DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
     IMAGE_NAME = "helder"
-    DOCKER_IMAGE_BACKEND = "helder/carhive-backend"
-    DOCKER_IMAGE_FRONTEND_ANGULAR = "helder/carhive-frontend-angular"
-    DOCKER_IMAGE_FRONTEND_VUE = "helder/carhive-frontend-vue"
+    DOCKER_IMAGE_BACKEND = "helder78/carhive-backend"
+    DOCKER_IMAGE_FRONTEND_ANGULAR = "helder78/carhive-frontend-angular"
+    DOCKER_IMAGE_FRONTEND_VUE = "helder78/carhive-frontend-vue"
   }
 
   stages {
