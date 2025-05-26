@@ -3,7 +3,12 @@ pipeline {
 
   environment {
     DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds') // Stockés dans Jenkins
-    IMAGE_NAME = "helder78/carhive-backend"
+    // IMAGE_NAME = "helder78/carhive-backend"
+    IMAGE_NAME = "ascandar"
+
+    DOCKER_IMAGE_BACKEND = "ascandar/carhive-backend"
+    DOCKER_IMAGE_FRONTEND_ANGULAR = "ascandar/carhive-frontend-angular"
+    DOCKER_IMAGE_FRONTEND_VUE = "ascandar/carhive-frontend-vue"
   }
 
   stages {
@@ -11,6 +16,14 @@ pipeline {
       steps {
         checkout scm
       }
+    }
+
+  stage('Build Docker Images') {
+        steps {
+            sh 'docker build -t $DOCKER_IMAGE_BACKEND ./backend/Projet_Spring_Boot-CarHive'
+            sh 'docker build -t $DOCKER_IMAGE_FRONTEND_ANGULAR ./frontend/car-Front-end-Angular'
+            sh 'docker build -t $DOCKER_IMAGE_FRONTEND_VUE ./frontend/car-hive-vueJs'
+        }
     }
 
     stage('Backend Tests') {
