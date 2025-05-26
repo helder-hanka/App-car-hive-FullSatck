@@ -7,6 +7,14 @@ pipeline {
     DOCKER_IMAGE_BACKEND = "helder78/carhive-backend"
     DOCKER_IMAGE_FRONTEND_ANGULAR = "helder78/carhive-frontend-angular"
     DOCKER_IMAGE_FRONTEND_VUE = "helder78/carhive-frontend-vue"
+
+    POSTGRES_USER = credentials('pg-user')
+    POSTGRES_PASSWORD = credentials('pg-password')
+    POSTGRES_DB = credentials('pg-db')
+    PGADMIN_EMAIL = credentials('pgadmin-email')
+    PGADMIN_PASSWORD = credentials('pgadmin-password')
+    JWT_SECRET_KEY = credentials('jwt-secret')
+    SECURITY_JWT_EXPIRATION_TIME = credentials('jwt-expiration')
   }
 
   stages {
@@ -64,7 +72,7 @@ pipeline {
     stage('Push Backend Image') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
-          sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
+          sh "echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin"
           sh "docker push $DOCKER_IMAGE_BACKEND"
           sh "docker push $DOCKER_IMAGE_FRONTEND_ANGULAR"
           sh "docker push $DOCKER_IMAGE_FRONTEND_VUE"
@@ -94,12 +102,32 @@ pipeline {
     //   }
     // }
 
+    // stage('Deploy with Docker Compose') {
+    //   steps {
+    //     sh 'docker-compose down || true'
+    //     sh 'docker-compose up -d --build'
+    //   }
+    // }
+
     stage('Deploy with Docker Compose') {
       steps {
-        sh 'docker-compose down || true'
-        sh 'docker-compose up -d --build'
+        withCredentials([
+          string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET_KEY'),
+          string(credentialsId: 'postgres-password', variable: 'POSTGRES_PASSWORD')
+        ]) {
+          withEnv([
+            "POSTGRES_DB=${env.POSTGRES_DB}",
+            "POSTGRES_USER=${env.POSTGRES_USER}",
+            "PGADMIN_EMAIL=${env.PGADMIN_EMAIL}",
+            "PGADMIN_PASSWORD=${env.PGADMIN_PASSWORD}",
+            "SECURITY_JWT_EXPIRATION_TIME=${env.SECURITY_JWT_EXPIRATION_TIME}"
+          ]) {
+            sh 'docker-compose -f docker-compose.yml up -d --build'
+          }
+        }
       }
     }
+
   }
   post {
     always {
