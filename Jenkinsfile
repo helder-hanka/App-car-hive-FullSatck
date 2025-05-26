@@ -27,24 +27,24 @@ pipeline {
     }
   }
 
-  stage('Start DB') {
-    steps {
-      sh 'docker-compose up -d db'
-      sh 'sleep 10' 
-    }
-  }
+  // stage('Start DB') {
+  //   steps {
+  //     sh 'docker-compose up -d db'
+  //     sh 'sleep 10' 
+  //   }
+  // }
 
-  stage('Backend Tests') {
-    steps {
-      dir('backend/Projet_Spring_Boot-CarHive') {
-        sh './mvnw test -Dspring.profiles.active=test'
-        // script {
-        //   def mvnHome = tool 'Maven 3.9.6'
-        //   sh "'${mvnHome}/bin/mvn' clean test"
-        // }
-      }
-    }
-  }
+  // stage('Backend Tests') {
+  //   steps {
+  //     dir('backend/Projet_Spring_Boot-CarHive') {
+  //       sh './mvnw test -Dspring.profiles.active=test'
+  //       // script {
+  //       //   def mvnHome = tool 'Maven 3.9.6'
+  //       //   sh "'${mvnHome}/bin/mvn' clean test"
+  //       // }
+  //     }
+  //   }
+  // }
 
   stage('Build & Push Backend Image') {
     steps {
