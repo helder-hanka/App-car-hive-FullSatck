@@ -12,7 +12,6 @@ target/
 *.iml
 src/main/resources/application-prod.properties
 
-
 # General
 .DS_Store
 *.log
