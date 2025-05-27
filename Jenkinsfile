@@ -84,9 +84,9 @@ pipeline {
       steps {
         script {
           sh """
-            docker run --rm -d --name carhive-vue-test -p 8081:80 $DOCKER_USERNAME/$DOCKER_IMAGE_FRONTEND_VUE:$IMAGE_TAG
+            docker run --rm -d --name carhive-vue-test -p 8086:80 $DOCKER_USERNAME/$DOCKER_IMAGE_FRONTEND_VUE:$IMAGE_TAG
             sleep 10
-            curl -f http://localhost:8081 || exit 1
+            curl -f http://localhost:8086 || exit 1
             docker stop carhive-vue-test
           """
         }
