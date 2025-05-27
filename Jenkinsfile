@@ -18,7 +18,6 @@ pipeline {
     PGADMIN_PASSWORD = credentials('pgadmin-password')
     JWT_SECRET_KEY = credentials('jwt-secret')
     SECURITY_JWT_EXPIRATION_TIME = credentials('jwt-expiration')
-    DOCKER_PASSWORD = 'docker-password'
   }
 
   stages {
@@ -102,7 +101,7 @@ pipeline {
           }
         }
       }
-      
+
     stage('Push Frontend Vue Image') {
       steps {
           script {
