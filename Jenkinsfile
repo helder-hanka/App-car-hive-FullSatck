@@ -26,7 +26,9 @@ pipeline {
           sh '''
             echo "Installing dependencies..."
             cd backend/Projet_Spring_Boot-CarHive
-            ./mvnw clean install
+            ./mvnw clean install -DskipTests
+            echo "Running backend unit tests..."
+            ./mvnw test
           '''
         }
       }
