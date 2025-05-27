@@ -18,6 +18,29 @@ pipeline {
         checkout scm
       }
     }
+    stage('Install Dependencies') {
+      steps {
+        script {
+          sh '''
+            echo "Installing dependencies..."
+            cd backend/Projet_Spring_Boot-CarHive
+            ./mvnw clean install -DskipTests
+            cd ../../frontend/car-Front-end-Angular
+            npm install
+            cd ../car-hive-vueJs
+            npm install
+          '''
+        }
+      }
+    }
+
+    stage('Test Docker Access') {
+      steps {
+        script {
+          sh 'docker version'
+        }
+      }
+    }
 
     stage('Build Docker Images') {
       steps {
