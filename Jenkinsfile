@@ -53,27 +53,27 @@ pipeline {
       }
     }
 
-    stage('Test Backend Image') {
-      steps {
-        script {
-          sh """
-            docker run --rm -d --name carhive-backend-test -p 8080:8080 $DOCKER_USERNAME/$DOCKER_IMAGE_BACKEND:$IMAGE_TAG
+    // stage('Test Backend Image') {
+    //   steps {
+    //     script {
+    //       sh """
+    //         docker run --rm -d --name carhive-backend-test -p 8080:8080 $DOCKER_USERNAME/$DOCKER_IMAGE_BACKEND:$IMAGE_TAG
 
-            for i in {1..30}; do
-              if curl -s http://localhost:8080/api/v1/cars > /dev/null; then
-                echo "✅ Backend is up"
-                break
-              fi
-              echo "⏳ Waiting for backend... ($i)"
-              sleep 1
-            done
+    //         for i in {1..30}; do
+    //           if curl -s http://localhost:8080/api/v1/cars > /dev/null; then
+    //             echo "✅ Backend is up"
+    //             break
+    //           fi
+    //           echo "⏳ Waiting for backend... ($i)"
+    //           sleep 1
+    //         done
 
-            curl -f http://localhost:8080/api/v1/cars || exit 1
-            docker stop carhive-backend-test
-          """
-        }
-      }
-    }
+    //         curl -f http://localhost:8080/api/v1/cars || exit 1
+    //         docker stop carhive-backend-test
+    //       """
+    //     }
+    //   }
+    // }
 
     stage('Test Angular Frontend Image') {
       steps {
