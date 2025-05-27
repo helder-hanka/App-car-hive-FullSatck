@@ -58,20 +58,41 @@ pipeline {
 
     stage('Test Backend Image') {
       steps {
-        script {
-          sh """
-            # docker run --rm -d --name carhive-backend-test -p 8080:8080 $DOCKER_USERNAME/$DOCKER_IMAGE_BACKEND:$IMAGE_TAG
-            docker run --rm -d --name carhive-backend-test -p 8080:8080 \
-              -e JWT_SECRET_KEY=$JWT_SECRET_KEY \
-              -e JWT_EXPIRATION_TIME=$JWT_EXPIRATION_TIME \
-              $DOCKER_USERNAME/$DOCKER_IMAGE_BACKEND:$IMAGE_TAG
-            sleep 30
-            curl -f http://localhost:8080/api/v1/cars || exit 1
-            docker stop carhive-backend-test
-          """
+        // Supposons que JWT_SECRET_KEY_ENV et JWT_EXPIRATION_TIME sont des variables d'environnement Jenkins
+        // (soit des credentials, soit des variables simples)
+        withCredentials([string(credentialsId: 'jwt-secret-key', variable: 'JWT_SECRET_KEY_FROM_CREDS')]) {
+          script {
+            sh """
+              docker run --rm -d --name carhive-backend-test -p 8080:8080 \\
+                -e JWT_SECRET_KEY="${JWT_SECRET_KEY_FROM_CREDS}" \\
+                -e SECURITY_JWT_EXPIRATION_TIME="${JWT_EXPIRATION_TIME}" \\
+                $DOCKER_USERNAME/$DOCKER_IMAGE_BACKEND:$IMAGE_TAG
+
+              sleep 60 # Augmentez le temps d'attente pour être sûr
+              curl -f http://localhost:8080/api/v1/cars || exit 1
+              docker stop carhive-backend-test
+            """
+          }
         }
       }
     }
+
+    // stage('Test Backend Image') {
+    //   steps {
+    //     script {
+    //       sh """
+    //         # docker run --rm -d --name carhive-backend-test -p 8080:8080 $DOCKER_USERNAME/$DOCKER_IMAGE_BACKEND:$IMAGE_TAG
+    //         docker run --rm -d --name carhive-backend-test -p 8080:8080 \
+    //           -e JWT_SECRET_KEY=$JWT_SECRET_KEY \
+    //           -e JWT_EXPIRATION_TIME=$JWT_EXPIRATION_TIME \
+    //           $DOCKER_USERNAME/$DOCKER_IMAGE_BACKEND:$IMAGE_TAG
+    //         sleep 30
+    //         curl -f http://localhost:8080/api/v1/cars || exit 1
+    //         docker stop carhive-backend-test
+    //       """
+    //     }
+    //   }
+    // }
 
     stage('Test Angular Frontend Image') {
       steps {
