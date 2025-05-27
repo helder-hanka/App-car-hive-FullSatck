@@ -46,9 +46,9 @@ pipeline {
       steps {
         script {
           sh """
-            docker build --no-cache -t $DOCKER_USERNAME/$DOCKER_IMAGE_BACKEND:$IMAGE_TAG ./backend/Projet_Spring_Boot-CarHive
-            docker build --no-cache -t $DOCKER_USERNAME/$DOCKER_IMAGE_FRONTEND_ANGULAR:$IMAGE_TAG ./frontend/car-Front-end-Angular
-            docker build --no-cache -t $DOCKER_USERNAME/$DOCKER_IMAGE_FRONTEND_VUE:$IMAGE_TAG ./frontend/car-hive-vueJs
+            docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE_BACKEND:$IMAGE_TAG ./backend/Projet_Spring_Boot-CarHive
+            docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE_FRONTEND_ANGULAR:$IMAGE_TAG ./frontend/car-Front-end-Angular
+            docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE_FRONTEND_VUE:$IMAGE_TAG ./frontend/car-hive-vueJs
           """
         }
       }
