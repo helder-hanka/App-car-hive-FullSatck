@@ -3,6 +3,9 @@ pipeline {
 
   environment {
     DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
+    DOCKER_USERNAME = 'Helder78'
+    DOCKER_PASSWORD = credentials('docker-password')
+    IMAGE_TAG = "${env.BUILD_NUMBER}"
     IMAGE_NAME = "helder"
     DOCKER_IMAGE_BACKEND = "helder78/carhive-backend"
     DOCKER_IMAGE_FRONTEND_ANGULAR = "helder78/carhive-frontend-angular"
@@ -15,7 +18,7 @@ pipeline {
     PGADMIN_PASSWORD = credentials('pgadmin-password')
     JWT_SECRET_KEY = credentials('jwt-secret')
     SECURITY_JWT_EXPIRATION_TIME = credentials('jwt-expiration')
-    DOCKER_PASSWORD = 'dockerhub-password'
+    DOCKER_PASSWORD = 'docker-password'
   }
 
   stages {
@@ -25,132 +28,125 @@ pipeline {
       }
     }
 
-    stage('Build Docker Images for Backend and Frontend') {
+    stage('Build Docker Image for Backend') {
       steps {
-        sh 'docker build -t $DOCKER_IMAGE_BACKEND ./backend/Projet_Spring_Boot-CarHive'
+        sh 'docker build --no-cache -t $IMAGE_NAME:$IMAGE_TAG $DOCKER_IMAGE_BACKEND ./backend/Projet_Spring_Boot-CarHive'
       }
     }
-    stage('Build Docker Images for Frontend Angular') {
+    stage('Build Docker Image for Frontend Angular') {
       steps {
-        sh 'docker build -t $DOCKER_IMAGE_FRONTEND_ANGULAR ./frontend/car-Front-end-Angular'
+        sh 'docker build --no-cache -t $IMAGE_NAME:$IMAGE_TAG $DOCKER_IMAGE_FRONTEND_ANGULAR ./frontend/car-Front-end-Angular'
       }
     }
-    stage('Build Docker Images for Frontend Vue') {
+    stage('Build Docker Image for Frontend Vue') {
       steps {
-        sh 'docker build -t $DOCKER_IMAGE_FRONTEND_VUE ./frontend/car-hive-vueJs'
-      }
-    }  
-    // stage('Build Docker Images') {
-    //   steps {
-    //     sh 'docker build -t $DOCKER_IMAGE_BACKEND ./backend/Projet_Spring_Boot-CarHive'
-    //     sh 'docker build -t $DOCKER_IMAGE_FRONTEND_ANGULAR ./frontend/car-Front-end-Angular'
-    //     sh 'docker build -t $DOCKER_IMAGE_FRONTEND_VUE ./frontend/car-hive-vueJs'
-    //   }
-    // }
-    // stage('Build Docker Images') {
-    //   steps {
-    //     sh 'docker build -t $DOCKER_IMAGE_BACKEND ./backend/Projet_Spring_Boot-CarHive'
-    //     sh 'docker build -t $DOCKER_IMAGE_FRONTEND_ANGULAR ./frontend/car-Front-end-Angular'
-    //     sh 'docker build -t $DOCKER_IMAGE_FRONTEND_VUE ./frontend/car-hive-vueJs'
-    //   }
-    // }
-
-    // stage('Start DB') {
-    //   steps {
-    //     sh 'docker-compose up -d db'
-    //     sh 'sleep 10'
-    //   }
-    // }
-
-    // stage('Backend Tests') {
-    //   steps {
-    //     dir('backend/Projet_Spring_Boot-CarHive') {
-    //       sh './mvnw test -Dspring.profiles.active=test'
-    //     }
-    //   }
-    // }
-
-    stage('Push Backend Image') {
-      steps {
-        // withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
-          // sh "echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin"
-          // sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
-          withDockerRegistry([credentialsId: "$DOCKER_PASSWORD", url: '']) {
-          sh "docker push $DOCKER_IMAGE_BACKEND"
-          sh "docker push $DOCKER_IMAGE_FRONTEND_ANGULAR"
-          sh "docker push $DOCKER_IMAGE_FRONTEND_VUE"
-        }
-        // script {
-        //   docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
-        //     def app = docker.build("${IMAGE_NAME}:${BUILD_NUMBER}", 'backend/Projet_Spring_Boot-CarHive')
-        //     app.push()
-        //   }
-        // }
+        sh 'docker build --no-cache -t $IMAGE_NAME:$IMAGE_TAG $DOCKER_IMAGE_FRONTEND_VUE ./frontend/car-hive-vueJs'
       }
     }
-
-    // stage('Build Angular Frontend') {
-    //   steps {
-    //     dir('frontend/car-Front-end-Angular') {
-    //       sh 'npm install && npm run build'
-    //     }
-    //   }
-    // }
-
-    // stage('Build Vue Frontend') {
-    //   steps {
-    //     dir('frontend/car-hive-vueJs') {
-    //       sh 'npm install && npm run build'
-    //     }
-    //   }
-    // }
-
-    // stage('Deploy with Docker Compose') {
-    //   steps {
-    //     sh 'docker-compose down || true'
-    //     sh 'docker-compose up -d --build'
-    //   }
-    // }
-
-    // stage('Deploy with Docker Compose') {
-    //   steps {
-    //     withCredentials([
-    //       string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET_KEY'),
-    //       string(credentialsId: 'postgres-password', variable: 'POSTGRES_PASSWORD')
-    //     ]) {
-    //       withEnv([
-    //         "POSTGRES_DB=${env.POSTGRES_DB}",
-    //         "POSTGRES_USER=${env.POSTGRES_USER}",
-    //         "PGADMIN_EMAIL=${env.PGADMIN_EMAIL}",
-    //         "PGADMIN_PASSWORD=${env.PGADMIN_PASSWORD}",
-    //         "SECURITY_JWT_EXPIRATION_TIME=${env.SECURITY_JWT_EXPIRATION_TIME}"
-    //       ]) {
-    //         sh 'docker-compose -f docker-compose.yml up -d --build'
-    //       }
-    //     }
-    //   }
-    // }
-
-    stage('Deploy with Docker Compose') {
+    stage('Test Docker Image for Backend') {
       steps {
-        withCredentials([string(credentialsId: 'postgres-password', variable: 'POSTGRES_PASSWORD')]) {
+        script {
           sh '''
-            echo "Déploiement Docker Compose en cours..."
-            
-            # Crée un fichier temporaire .env sécurisé
-            echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" > .env
-
-            # Déploie avec Docker Compose
-            docker-compose -f docker-compose.prod.yml --env-file .env up -d
-
-            # Nettoie le fichier .env
-            rm -f .env
+            docker run --rm -d --name carhive-backend-test -p 8080:8080 $IMAGE_NAME:$IMAGE_TAG
+            sleep 10
+            curl -f http://localhost:8080/api/v1/cars || exit 1
+            docker stop carhive-backend-test
           '''
         }
       }
     }
+    stage('Test Docker Image for Frontend Angular') {
+      steps {
+        script {
+          sh '''
+            docker run --rm -d --name carhive-frontend-angular-test -p 4200:80 $IMAGE_NAME:$IMAGE_TAG
+            sleep 10
+            curl -f http://localhost:4200 || exit 1
+            docker stop carhive-frontend-angular-test
+          '''
+        }
+      }
+    }
+    stage('Test Docker Image for Frontend Vue') {
+      steps {
+        script {
+          sh '''
+            docker run --rm -d --name carhive-frontend-vue-test -p 8081:80 $IMAGE_NAME:$IMAGE_TAG
+            sleep 10
+            curl -f http://localhost:8081 || exit 1
+            docker stop carhive-frontend-vue-test
+          '''
+        }
+      }
+    }
+    stage('Push Backend Image') {
+      steps {
+          script {
+            sh '''
+              echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+              docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_IMAGE_BACKEND:$IMAGE_TAG
+              docker push $DOCKER_IMAGE_BACKEND:$IMAGE_TAG
+            '''
+          }
+        }
+      }
 
-  }
+    stage('Push Frontend Angular Image') {
+      steps {
+          script {
+            sh '''
+              echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+              docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_IMAGE_FRONTEND_ANGULAR:$IMAGE_TAG
+              docker push $DOCKER_IMAGE_FRONTEND_ANGULAR:$IMAGE_TAG
+            '''
+          }
+        }
+      }
+      
+    stage('Push Frontend Vue Image') {
+      steps {
+          script {
+            sh '''
+              echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+              docker tag $IMAGE_NAME:$IMAGE_TAG $DOCKER_IMAGE_FRONTEND_VUE:$IMAGE_TAG
+              docker push $DOCKER_IMAGE_FRONTEND_VUE:$IMAGE_TAG
+            '''
+          }
+        }
+      }
+    stage('Cleanup Docker Images') {
+      steps {
+        script {
+          sh '''
+            docker rmi $IMAGE_NAME:$IMAGE_TAG || true
+            docker rmi $DOCKER_IMAGE_BACKEND:$IMAGE_TAG || true
+            docker rmi $DOCKER_IMAGE_FRONTEND_ANGULAR:$IMAGE_TAG || true
+            docker rmi $DOCKER_IMAGE_FRONTEND_VUE:$IMAGE_TAG || true
+          '''
+        }
+      }
+    }
+    stage('Deploy to Production') {
+      steps {
+        script {
+          sh '''
+            echo "Deploying to production..."
+            # Add your deployment commands here
+            # For example, you might use kubectl or docker-compose to deploy the images
+          '''
+        }
+      }
+    }
+    stage('Notify') {
+      steps {
+        script {
+          // Notify via email, Slack, etc.
+          echo 'Sending notification...'
+        }
+      }
+    }
+
+  }  
   post {
     always {
       cleanWs()
@@ -162,25 +158,4 @@ pipeline {
       echo 'Pipeline failed!'
     }
   }
-  // options {
-  //   timeout(time: 1, unit: 'HOURS')
-  // }
-  // triggers {
-  //   pollSCM('H/15 * * * *') // Poll SCM every 15 minutes
-  // }
-  // tools {
-  //   maven 'Maven 3.6.3' // Specify the Maven version
-  //   jdk 'JDK 11' // Specify the JDK version
-  // }
-  // parameters {
-  //   string(name: 'DOCKERHUB_CREDENTIALS', defaultValue: '', description: 'DockerHub credentials ID')
-  //   string(name: 'IMAGE_NAME', defaultValue: 'helder', description: 'Base name for Docker images')
-  // }
-  // triggers {
-  //   cron('H/15 * * * *') // Poll SCM every 15 minutes
-  // }
-  // options {
-  //   disableConcurrentBuilds() // Prevent concurrent builds
-  //   buildDiscarder(logRotator(numToKeepStr: '10')) // Keep last 10 builds
-  // }
 }
