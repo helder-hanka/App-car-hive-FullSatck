@@ -20,17 +20,13 @@ pipeline {
         checkout scm
       }
     }
-    stage('Install Dependencies') {
+    stage('Install Dependencies & Run Backend Unit Tests') {
       steps {
         script {
           sh '''
             echo "Installing dependencies..."
             cd backend/Projet_Spring_Boot-CarHive
-            ./mvnw clean install -DskipTests
-            cd ../../frontend/car-Front-end-Angular
-            npm install
-            cd ../car-hive-vueJs
-            npm install
+            ./mvnw clean install
           '''
         }
       }
@@ -55,8 +51,6 @@ pipeline {
         }
       }
     }
-
-  
 
     stage('Test Backend Image') {
       steps {
