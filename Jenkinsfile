@@ -15,6 +15,7 @@ pipeline {
     PGADMIN_PASSWORD = credentials('pgadmin-password')
     JWT_SECRET_KEY = credentials('jwt-secret')
     SECURITY_JWT_EXPIRATION_TIME = credentials('jwt-expiration')
+    DOCKER_PASSWORD = 'dockerhub-password'
   }
 
   stages {
@@ -71,10 +72,10 @@ pipeline {
 
     stage('Push Backend Image') {
       steps {
-        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+        // withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
           // sh "echo $DOCKERHUB_PASSWORD | docker login -u $DOCKERHUB_USERNAME --password-stdin"
-          sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
-          // withDockerRegistry([credentialsId: "$dockerhub_creds", url: '']) {
+          // sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
+          withDockerRegistry([credentialsId: "$DOCKER_PASSWORD", url: '']) {
           sh "docker push $DOCKER_IMAGE_BACKEND"
           sh "docker push $DOCKER_IMAGE_FRONTEND_ANGULAR"
           sh "docker push $DOCKER_IMAGE_FRONTEND_VUE"
