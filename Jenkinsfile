@@ -7,9 +7,9 @@ pipeline {
     DOCKER_PASSWORD = credentials('docker-password')
     IMAGE_TAG = "${env.BUILD_NUMBER}"
     IMAGE_NAME = "helder"
-    DOCKER_IMAGE_BACKEND = "helder78/carhive-backend"
-    DOCKER_IMAGE_FRONTEND_ANGULAR = "helder78/carhive-frontend-angular"
-    DOCKER_IMAGE_FRONTEND_VUE = "helder78/carhive-frontend-vue"
+    DOCKER_IMAGE_BACKEND = "carhive-backend"
+    DOCKER_IMAGE_FRONTEND_ANGULAR = "carhive-frontend-angular"
+    DOCKER_IMAGE_FRONTEND_VUE = "carhive-frontend-vue"
 
     POSTGRES_USER = credentials('pg-user')
     POSTGRES_PASSWORD = credentials('pg-password')
