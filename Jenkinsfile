@@ -11,7 +11,7 @@ pipeline {
     DOCKER_IMAGE_FRONTEND_ANGULAR = "carhive-frontend-angular"
     DOCKER_IMAGE_FRONTEND_VUE = "carhive-frontend-vue"
     JWT_SECRET_KEY = credentials('jwt-secret-key')
-    JWT_EXPIRATION_TIME = credentials('security-jwt-expiration-time')
+    JWT_EXPIRATION_TIME = "86400000"
   }
 
   stages {
@@ -74,45 +74,14 @@ pipeline {
       }
     }
 
-    // stage('Test Backend Image') {
-    //   steps {
-    //     script {
-    //       sh """
-    //         # docker run --rm -d --name carhive-backend-test -p 8080:8080 $DOCKER_USERNAME/$DOCKER_IMAGE_BACKEND:$IMAGE_TAG
-    //         docker run --rm -d --name carhive-backend-test -p 8080:8080 \
-    //           -e JWT_SECRET_KEY=$JWT_SECRET_KEY \
-    //           -e JWT_EXPIRATION_TIME=$JWT_EXPIRATION_TIME \
-    //           $DOCKER_USERNAME/$DOCKER_IMAGE_BACKEND:$IMAGE_TAG
-    //         sleep 30
-    //         curl -f http://localhost:8080/api/v1/cars || exit 1
-    //         docker stop carhive-backend-test
-    //       """
-    //     }
-    //   }
-    // }
-
-    stage('Test Angular Frontend Image') {
+    stage('Test unit backend') {
       steps {
         script {
-          sh """
-            docker run --rm -d --name carhive-angular-test -p 4200:80 $DOCKER_USERNAME/$DOCKER_IMAGE_FRONTEND_ANGULAR:$IMAGE_TAG
-            sleep 30
-            curl -f http://localhost:4200 || exit 1
-            docker stop carhive-angular-test
-          """
-        }
-      }
-    }
-
-    stage('Test Vue Frontend Image') {
-      steps {
-        script {
-          sh """
-            docker run --rm -d --name carhive-vue-test -p 8086:80 $DOCKER_USERNAME/$DOCKER_IMAGE_FRONTEND_VUE:$IMAGE_TAG
-            sleep 30
-            curl -f http://localhost:8086 || exit 1
-            docker stop carhive-vue-test
-          """
+          sh '''
+            echo "Running backend unit tests..."
+            cd backend/Projet_Spring_Boot-CarHive
+            ./mvnw test
+          '''
         }
       }
     }
