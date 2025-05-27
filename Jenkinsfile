@@ -10,14 +10,6 @@ pipeline {
     DOCKER_IMAGE_BACKEND = "carhive-backend"
     DOCKER_IMAGE_FRONTEND_ANGULAR = "carhive-frontend-angular"
     DOCKER_IMAGE_FRONTEND_VUE = "carhive-frontend-vue"
-
-    POSTGRES_USER = credentials('pg-user')
-    POSTGRES_PASSWORD = credentials('pg-password')
-    POSTGRES_DB = credentials('pg-db')
-    PGADMIN_EMAIL = credentials('pgadmin-email')
-    PGADMIN_PASSWORD = credentials('pgadmin-password')
-    JWT_SECRET_KEY = credentials('jwt-secret')
-    SECURITY_JWT_EXPIRATION_TIME = credentials('jwt-expiration')
   }
 
   stages {
