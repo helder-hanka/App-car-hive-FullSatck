@@ -18,22 +18,10 @@ pipeline {
       }
     }
 
-    stage('Install & Test Backend') {
+    stage('Install Dependencies & Test Unit Backend') {
       steps {
         dir('backend/Projet_Spring_Boot-CarHive') {
           sh './mvnw clean install'
-        }
-      }
-    }
-
-    stage('Install Dependencies & Run Backend Unit Tests') {
-      steps {
-        script {
-          sh '''
-            echo "Installing dependencies and running backend unit tests..."
-            cd backend/Projet_Spring_Boot-CarHive
-            ./mvnw clean install
-          '''
         }
       }
     }
