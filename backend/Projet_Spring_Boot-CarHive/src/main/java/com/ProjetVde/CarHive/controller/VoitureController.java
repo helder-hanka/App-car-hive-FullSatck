@@ -81,13 +81,10 @@ public class VoitureController {
             voiture.setUserProfile(userProfile);
 
             // Sauvegarde et retour de l'objet
-            Voiture createdVoiture = voitureService.create(voiture);
-            resBody.put("message", "Create successful");
-            resBody.put("car", String.valueOf(createdVoiture));
-            return ResponseEntity.ok(resBody);
+            voitureService.create(voiture);
+            return ResponseEntity.ok(Map.of("message", "Create successful"));
         } catch (Exception e) {
-            resBody.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(resBody);
+            return ResponseEntity.internalServerError().body("Une erreur est survenue : " + e.getMessage());
         }
     }
 
