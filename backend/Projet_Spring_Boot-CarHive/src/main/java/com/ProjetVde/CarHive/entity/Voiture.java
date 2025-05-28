@@ -1,10 +1,7 @@
 package com.ProjetVde.CarHive.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
-
-import java.time.LocalDate;
 @Data
 @Entity
 @Table(name = "voiture")
@@ -23,9 +20,8 @@ public class Voiture {
     @Column(nullable = false, length = 20)
     private String modele;
 
-    @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(nullable = false, length = 10, columnDefinition = "DATE")
-    private LocalDate annee;
+    private String annee;
 
     @Column(length = 300)
     private  String imageUrl;

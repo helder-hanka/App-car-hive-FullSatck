@@ -1,0 +1,20 @@
+# Node
+node_modules/
+dist/
+.env
+npm-debug.log
+
+# Java
+*.class
+target/
+*.jar
+*.war
+*.iml
+src/main/resources/application-prod.properties
+
+# General
+.DS_Store
+*.log
+.idea/
+*.swp
+.env

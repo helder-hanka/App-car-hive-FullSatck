@@ -1,83 +1,120 @@
 pipeline {
-  agent any // Utilise un agent Jenkins libre (machine Jenkins ou container)
+  agent any
 
   environment {
-    COMPOSE_FILE = 'docker-compose.yml' // Fichier docker-compose utilisé
-  }
+    DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
+    DOCKER_USERNAME = 'helder78'
+    DOCKER_PASSWORD = credentials('docker-password')
+    IMAGE_TAG = "${env.BUILD_NUMBER}"
 
-  options {
-    timestamps() // Affiche l’heure dans les logs
-    skipStagesAfterUnstable() // Arrête les étapes suivantes si une est instable
+    DOCKER_IMAGE_BACKEND = "carhive-backend"
+    DOCKER_IMAGE_FRONTEND_ANGULAR = "carhive-frontend-angular"
+    DOCKER_IMAGE_FRONTEND_VUE = "carhive-frontend-vue"
+    JWT_SECRET_KEY = credentials('jwt-secret-key')
+    JWT_EXPIRATION_TIME = "86400000"
   }
 
   stages {
-    // 1️⃣ Phase de récupération du code source
     stage('Checkout') {
       steps {
-        echo '📥 Clonage du dépôt...'
-        checkout scm // clone le dépôt Git relié au job Jenkins
+        checkout scm
       }
     }
 
-    // 2️⃣ Build du backend Java Spring Boot
-    stage('Build Backend') {
+    stage('Install & Test Backend') {
       steps {
-        echo '⚙️ Compilation du backend Spring Boot...'
         dir('backend/Projet_Spring_Boot-CarHive') {
-          sh 'mvn clean package -DskipTests' // compile sans lancer les tests
+          sh './mvnw clean install'
         }
       }
     }
 
-    // 3️⃣ Build du frontend Angular
-    stage('Build Frontend Angular') {
+    stage('Install Dependencies & Run Backend Unit Tests') {
       steps {
-        echo '⚙️ Build Angular...'
-        dir('frontend/car-Front-end-Angular') {
-          sh 'npm install'
-          sh 'npm run build --prod'
+        script {
+          sh '''
+            echo "Installing dependencies and running backend unit tests..."
+            cd backend/Projet_Spring_Boot-CarHive
+            ./mvnw clean install
+          '''
         }
       }
     }
 
-    // 4️⃣ Build du frontend Vue.js
-    stage('Build Frontend Vue') {
+    stage('Test Docker Access') {
       steps {
-        echo '⚙️ Build Vue.js...'
-        dir('frontend/car-hive-vueJs') {
-          sh 'npm install'
-          sh 'npm run build --prod'
+        script {
+          sh 'docker version'
         }
       }
     }
 
-    // 5️⃣ Build des images Docker
-    stage('Docker Compose Build') {
+    stage('Build Docker Images') {
       steps {
-        echo '🐳 Build des images Docker...'
-        sh 'docker-compose build'
+        script {
+          sh """
+            docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE_BACKEND:$IMAGE_TAG ./backend/Projet_Spring_Boot-CarHive
+            docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE_FRONTEND_ANGULAR:$IMAGE_TAG ./frontend/car-Front-end-Angular
+            docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE_FRONTEND_VUE:$IMAGE_TAG ./frontend/car-hive-vueJs
+          """
+        }
       }
     }
 
-    // 6️⃣ Démarrage des containers
-    stage('Docker Compose Up') {
+    stage('Push Docker Images') {
       steps {
-        echo '🚀 Lancement des services via Docker Compose...'
-        sh 'docker-compose up -d'
+        script {
+          sh """
+            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+            docker push $DOCKER_USERNAME/$DOCKER_IMAGE_BACKEND:$IMAGE_TAG
+            docker push $DOCKER_USERNAME/$DOCKER_IMAGE_FRONTEND_ANGULAR:$IMAGE_TAG
+            docker push $DOCKER_USERNAME/$DOCKER_IMAGE_FRONTEND_VUE:$IMAGE_TAG
+          """
+        }
+      }
+    }
+
+    stage('Cleanup Docker Images') {
+      steps {
+        script {
+          sh """
+            docker rmi $DOCKER_USERNAME/$DOCKER_IMAGE_BACKEND:$IMAGE_TAG || true
+            docker rmi $DOCKER_USERNAME/$DOCKER_IMAGE_FRONTEND_ANGULAR:$IMAGE_TAG || true
+            docker rmi $DOCKER_USERNAME/$DOCKER_IMAGE_FRONTEND_VUE:$IMAGE_TAG || true
+          """
+        }
+      }
+    }
+
+    stage('Deploy to Production') {
+      steps {
+        script {
+          sh '''
+            echo "Deploying to production..."
+            # Place deployment commands here, e.g.:
+            # docker-compose -f docker-compose.prod.yml up -d
+          '''
+        }
+      }
+    }
+
+    stage('Notify') {
+      steps {
+        echo 'Sending notification...'
+        // Ajouter intégration Slack ou email ici
       }
     }
   }
 
-  // 🔁 Étapes de post-pipeline
   post {
+    always {
+      cleanWs()
+    }
     success {
-      echo '✅ Déploiement terminé avec succès !'
+      echo '✅ Pipeline completed successfully!'
     }
     failure {
-      echo '❌ Échec du pipeline.'
-    }
-    always {
-      echo '🧹 Nettoyage temporaire (si besoin)...'
+      echo '❌ Pipeline failed!'
     }
   }
 }

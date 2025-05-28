@@ -5,10 +5,11 @@ services:
     image: postgres:16
     container_name: carhive-db
     restart: always
+    env_file: .env
     environment:
-      POSTGRES_USER: carhive
-      POSTGRES_PASSWORD: carhive123
-      POSTGRES_DB: carhivedb
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - carhive-data:/var/lib/postgresql/data
     ports:
@@ -20,9 +21,10 @@ services:
     image: dpage/pgadmin4
     container_name: carhive-pgadmin
     restart: always
+    env_file: .env
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     ports:
       - "8081:80"
     networks:
@@ -31,28 +33,15 @@ services:
   backend:
     build:
       context: ./backend/Projet_Spring_Boot-CarHive
-      dockerfile: Dockerfile
     container_name: carhive-backend
     depends_on:
       - db
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/carhivedb
-      SPRING_DATASOURCE_USERNAME: carhive
-      SPRING_DATASOURCE_PASSWORD: carhive123
-      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
-
-      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_JPA_SHOW_SQL: "true"
-      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
-
-      JWT_SECRET_KEY: s/QfOkxmGPQ0H+rECvoZnSXv0OonOCE1BNTIOmcqytk9yKS1NvITm3h+9nB0kZvTD+gTfX6v3NaD0Gg73IGbSQ==
-      SECURITY_JWT_EXPIRATION_TIME: 86400000
-
-      SERVER_PORT: 8080
-
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: DEBUG
-      LOGGING_LEVEL_ORG_APACHE_CATALINA_CORE: DEBUG
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      SECURITY_JWT_EXPIRATION_TIME: ${SECURITY_JWT_EXPIRATION_TIME}
     ports:
       - "8080:8080"
     networks:
@@ -61,7 +50,6 @@ services:
   frontend-angular:
     build:
       context: ./frontend/car-Front-end-Angular
-      dockerfile: Dockerfile
     container_name: carhive-frontend-angular
     depends_on:
       - backend
@@ -75,7 +63,6 @@ services:
   frontend-vue:
     build:
       context: ./frontend/car-hive-vueJs
-      dockerfile: Dockerfile
     container_name: carhive-frontend-vue
     depends_on:
       - backend
@@ -86,25 +73,8 @@ services:
     networks:
       - app-network
 
-  jenkins:
-    build:
-      context: ./jenkins
-      dockerfile: Dockerfile
-    container_name: carhive-jenkins
-    user: root
-    restart: always
-    ports:
-      - "8082:8080"
-      - "50000:50000"
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - app-network
-
 volumes:
   carhive-data:
-  jenkins_home:
 
 networks:
   app-network:
