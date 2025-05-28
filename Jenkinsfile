@@ -2,7 +2,6 @@ pipeline {
   agent any
 
   environment {
-    DOCKERHUB_CREDENTIALS = credentials('dockerhub-creds')
     DOCKER_USERNAME = 'helder78'
     DOCKER_PASSWORD = credentials('docker-password')
     IMAGE_TAG = "${env.BUILD_NUMBER}"
@@ -10,8 +9,6 @@ pipeline {
     DOCKER_IMAGE_BACKEND = "carhive-backend"
     DOCKER_IMAGE_FRONTEND_ANGULAR = "carhive-frontend-angular"
     DOCKER_IMAGE_FRONTEND_VUE = "carhive-frontend-vue"
-    JWT_SECRET_KEY = credentials('jwt-secret-key')
-    JWT_EXPIRATION_TIME = "86400000"
   }
 
   stages {
