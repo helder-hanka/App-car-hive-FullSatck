@@ -20,6 +20,13 @@ pipeline {
         checkout scm
       }
     }
+
+    stage('Build and Test') {
+      steps {
+        sh 'mvn clean package'
+      }
+    }
+
     stage('Install Dependencies & Run Backend Unit Tests') {
       steps {
         script {
@@ -50,34 +57,6 @@ pipeline {
             docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE_FRONTEND_ANGULAR:$IMAGE_TAG ./frontend/car-Front-end-Angular
             docker build -t $DOCKER_USERNAME/$DOCKER_IMAGE_FRONTEND_VUE:$IMAGE_TAG ./frontend/car-hive-vueJs
           """
-        }
-      }
-    }
-
-    stage('Test Backend Image') {
-      steps {
-        script {
-          sh """
-            docker run --rm -it -p 8080:8080 \
-              -e JWT_SECRET_KEY="s/QfOkxmGPQ0H+rECvoZnSXv0OonOCE1BNTIOmcqytk9yKS1NvITm3h+9nB0kZvTD+gTfX6v3NaD0Gg73IGbSQ==" \
-              -e SECURITY_JWT_EXPIRATION_TIME="86400000" \
-              $DOCKER_USERNAME/$DOCKER_IMAGE_BACKEND:$IMAGE_TAG
-            sleep 30
-            curl -f http://localhost:8080/api/v1/cars || exit 1
-            docker stop carhive-backend-test
-          """
-        }
-      }
-    }
-
-    stage('Test unit backend') {
-      steps {
-        script {
-          sh '''
-            echo "Running backend unit tests..."
-            cd backend/Projet_Spring_Boot-CarHive
-            ./mvnw test
-          '''
         }
       }
     }
