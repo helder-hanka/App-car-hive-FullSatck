@@ -96,6 +96,12 @@ class CarHiveApplicationTests {
 		voitureRequest.setNomGarage("Mon Garage");
 		voitureRequest.setAdresseGarage("123 Rue Principale");
 		voitureRequest.setTelephoneGarage("0601020304");
+		voitureRequest.setImageUrl("http://example.com/image_creation.jpg"); // Ajout du champ imageUrl
+
+		// Imprimer le JSON envoyé pour le débogage
+		String jsonContent = objectMapper.writeValueAsString(voitureRequest);
+		System.out.println("JSON envoyé pour la création de voiture: " + jsonContent);
+
 
 		// Création d'un utilisateur
 		User user = new User();
@@ -133,6 +139,7 @@ class CarHiveApplicationTests {
 		voiture.setGarage(garage);
 		voiture.setColor(color);
 		voiture.setUserProfile(userProfile);
+		voiture.setImageUrl(voitureRequest.getImageUrl()); // Assurez-vous que l'URL est aussi définie sur l'entité Voiture
 
 		// Mock des services
 		lenient().when(garageService.getByName("Mon Garage")).thenReturn(Optional.of(garage));
@@ -144,15 +151,12 @@ class CarHiveApplicationTests {
 		// Exécution de la requête et vérifications
 		mockMvc.perform(post("/voiture/create")
 						.contentType(MediaType.APPLICATION_JSON)
-						.content(objectMapper.writeValueAsString(voitureRequest)))
+						.content(jsonContent)) // Utilisez la variable jsonContent ici
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.id").value(1))
-				.andExpect(jsonPath("$.immatriculation").value("XYZ-789"))
-				.andExpect(jsonPath("$.marque").value("Toyota"))
-				.andExpect(jsonPath("$.modele").value("Corolla"))
-				.andExpect(jsonPath("$.annee").value("2022"))
-				.andExpect(jsonPath("$.color.color").value("Rouge"))
-				.andExpect(jsonPath("$.garage.nom").value("Mon Garage"));
+				.andExpect(jsonPath("$.message").value("Create successful"));
+
+		// vérifier que la méthode 'create' du service a bien été appelée
+		verify(voitureService, times(1)).create(any(Voiture.class));
 	}
 
 	@Test
@@ -196,7 +200,7 @@ class CarHiveApplicationTests {
 		mockMvc.perform(delete("/voiture/{id}", voitureId)
 						.contentType(MediaType.APPLICATION_JSON))
 				.andExpect(status().isOk())
-				.andExpect(content().string("Voiture supprimée avec succès"));
+				.andExpect(jsonPath("$.message").value("Voiture supprimée avec succès"));
 
 		// Vérification que la méthode delete a bien été appelée une fois avec le bon ID
 		verify(voitureService, times(1)).delete(voitureId);
@@ -246,6 +250,7 @@ class CarHiveApplicationTests {
 		voitureRequest.setNomGarage("Garage A");
 		voitureRequest.setAdresseGarage("123 Main Street");
 		voitureRequest.setTelephoneGarage("0123456789");
+		voitureRequest.setImageUrl("http://example.com/image_creation.jpg");
 
 		// Mock des services pour gérer la couleur et le garage
 		Color color = new Color();
@@ -254,6 +259,8 @@ class CarHiveApplicationTests {
 
 		Garage garage = new Garage();
 		garage.setNom("Garage A");
+		garage.setAdresse(voitureRequest.getAdresseGarage());
+		garage.setTelephone(voitureRequest.getTelephoneGarage());
 		lenient().when(garageService.getByName("Garage A")).thenReturn(Optional.of(garage));
 
 		// Mock de la mise à jour de la voiture
@@ -268,6 +275,7 @@ class CarHiveApplicationTests {
 				.andExpect(jsonPath("$.marque").value("Honda"))
 				.andExpect(jsonPath("$.modele").value("Civic"))
 				.andExpect(jsonPath("$.annee").value("2023"))
+				.andExpect(jsonPath("$.imageUrl").value("http://example.com/image_creation.jpg"))
 				.andExpect(jsonPath("$.color.color").value("Red"))
 				.andExpect(jsonPath("$.garage.nom").value("Garage A"));
 
@@ -284,6 +292,7 @@ class CarHiveApplicationTests {
 		voiture1.setMarque("Toyota");
 		voiture1.setModele("Corolla");
 		voiture1.setAnnee("2022");
+		voiture1.setImageUrl("http://example.com/image_creation.jpg");
 
 		Voiture voiture2 = new Voiture();
 		voiture2.setId(2L);
@@ -291,6 +300,7 @@ class CarHiveApplicationTests {
 		voiture2.setMarque("Honda");
 		voiture2.setModele("Civic");
 		voiture2.setAnnee("2023");
+		voiture2.setImageUrl("http://example.com/image_creation.jpg");
 
 		List<Voiture> voitures = Arrays.asList(voiture1, voiture2);
 
